@@ -23,8 +23,8 @@ import lombok.Setter;
 public abstract class BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(updatable = false, nullable = false, columnDefinition = "INT(11")
-    private Long id;
+    @Column(updatable = false, nullable = false, columnDefinition = "INT(11)")
+    protected Long id;
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(updatable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
@@ -34,6 +34,7 @@ public abstract class BaseEntity {
     @Column(updatable = false, columnDefinition = "TIMESTAMP DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP")
     private Date updateTimestamp;
 
+    // @Setter
     @Column(nullable = false, columnDefinition = "TINYINT(1) DEFAULT 0", length = 1)
     private boolean del;
 

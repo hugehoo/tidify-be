@@ -2,6 +2,8 @@ plugins {
 	id 'java'
 	id 'org.springframework.boot' version '2.7.8'
 	id 'io.spring.dependency-management' version '1.0.15.RELEASE'
+	// querydsl
+	id "com.ewerk.gradle.plugins.querydsl" version "1.0.10"
 }
 
 group = 'tidify'
@@ -21,6 +23,7 @@ apply plugin: "io.spring.dependency-management"
 
 ext {
 	springCloudVersion = '2021.0.3'
+	queryDslVersion = "5.0.0"
 }
 
 dependencyManagement {
@@ -52,6 +55,26 @@ dependencies {
 	// oauth
 	implementation'com.google.code.gson:gson:2.8.7'
 
+	annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
+
+//	implementation 'org.springframework.boot:spring-boot-starter-webflux'
+	implementation "com.querydsl:querydsl-jpa:${queryDslVersion}"
+	annotationProcessor "com.querydsl:querydsl-apt:${queryDslVersion}"
+}
+
+def querydslDir = "$buildDir/generated/querydsl"
+querydsl {
+	jpa = true
+	querydslSourcesDir = querydslDir
+}
+sourceSets {
+	main.java.srcDir querydslDir
+}
+configurations {
+	querydsl.extendsFrom compileClasspath
+}
+compileQuerydsl {
+	options.annotationProcessorPath = configurations.querydsl
 }
 
 tasks.named('test') {

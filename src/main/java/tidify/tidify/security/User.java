@@ -62,7 +62,7 @@ public class User extends BaseEntity {
 
     private String profileImageUrl;
 
-    private String description;
+    // private String description;
 
     @Enumerated(EnumType.STRING)
     private SocialType socialType;
@@ -74,16 +74,14 @@ public class User extends BaseEntity {
     private String refreshToken;
     //
 
-    // @Builder
-    // public User(String type, String name, String email, String password) {
-    //     this.type = type;
-    //     this.name = name;
-    //     this.email = email;
-    //     this.password = password;
-    // }
+    @Builder
+    public User(String name, String email, RoleType role) {
+        this.name = name;
+        this.email = email;
+    }
 
-    @Builder(builderMethodName = "KAKAO")
-    public User(String type, KakaoSample kakao, String password,
+    // @Builder(builderMethodName = "KAKAO")
+    public User(KakaoSample kakao, String password,
         KAKAOLoginTokenInfo token) {
         this.type = "0";
         this.name = kakao.getProperties().getNickName();
@@ -93,5 +91,15 @@ public class User extends BaseEntity {
         this.password = password;
         this.socialType = SocialType.KAKAO;
         this.profileImageUrl = kakao.getProperties().getProfileImage();
+    }
+
+    public String getRoleKey() {
+        return RoleType.ROLE_VIEW.name();
+    }
+
+    public User update(String name) {
+        this.name = name;
+
+        return this;
     }
 }

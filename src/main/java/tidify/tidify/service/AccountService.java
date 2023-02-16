@@ -5,24 +5,23 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.Optional;
 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.security.oauth2.client.registration.ClientRegistration;
+import org.springframework.security.oauth2.client.registration.InMemoryClientRegistrationRepository;
+import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
+import org.springframework.security.oauth2.core.OAuth2AccessToken;
 import org.springframework.stereotype.Service;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import tidify.tidify.common.KAKAOFeign;
 import tidify.tidify.common.KAKAOLoginTokenInfo;
-import tidify.tidify.common.KakaoAccount;
 import tidify.tidify.common.KakaoSample;
-import tidify.tidify.domain.Account;
-import tidify.tidify.domain.SocialType;
-import tidify.tidify.repository.AccountRepository;
 import tidify.tidify.repository.UserRepository;
 import tidify.tidify.security.User;
 
@@ -30,22 +29,35 @@ import tidify.tidify.security.User;
 @Service
 @RequiredArgsConstructor
 public class AccountService {
+
+    private final InMemoryClientRegistrationRepository inMemoryRegistrationRepository;
+    @Value("${spring.security.oauth2.client.provider.kakao.user-info-uri}")
+    private String userInfoUri;
+
+    @Value("${spring.security.oauth2.client.registration.kakao.redirect-uri}")
+    private String redirectUri;
+
+    @Value("${spring.security.oauth2.client.registration.kakao.authorization-grant-type}")
+    private String grantType;
+
+    @Value("${spring.security.oauth2.client.registration.kakao.client-id}")
+    private String clientId;
+
     private final KAKAOFeign kakaoFeign;
     private final UserRepository userRepository;
 
-    public KAKAOLoginTokenInfo getKAKAOAccessTokenFeign(String code) {
+    public KAKAOLoginTokenInfo getKAKAOAccessTokenFeign(String authorizationCode) {
+        // value annotation 으로 부르면 되는데 굳이..?
+        ClientRegistration kakao = inMemoryRegistrationRepository.findByRegistrationId("kakao");
+        // kakaoFeign.getAccessToken(grantType, clientId, redirectUri, authorizationCode);
+        KAKAOLoginTokenInfo tokenInfo = kakaoFeign.getAccessToken(grantType, clientId, redirectUri, authorizationCode);
+        // new OAuth2UserRequest(kakao, new OAuth2AccessToken("Bearer", tokenInfo.getAccess_token(), tokenInfo.getIssuedAt(), tokenInfo.getExpires_in()))
 
-        KAKAOLoginTokenInfo tokenInfo = kakaoFeign.getAccessToken(
-            "authorization_code",
-            "c3a459def82fa127f7238d078ece3a8e",
-            "http://localhost:8080/app/users/kakao",
-            code
-        );
-        System.out.println(tokenInfo.getAccess_token());
-        System.out.println(tokenInfo.getRefresh_token());
-        System.out.println(tokenInfo.getExpires_in());
-
-        createKakaoUser(tokenInfo);
+        User kakaoUser = createKakaoUser(tokenInfo);
+        Optional<User> user = userRepository.findWithUserRolesByEmailAndDel(kakaoUser.getEmail(), false);
+        if (!user.isPresent()) {
+            kakaoUser = userRepository.save(kakaoUser);
+        }
         return tokenInfo;
     }
 
@@ -104,19 +116,15 @@ public class AccountService {
     //     return access_Token;
     // }
 
-    public void createKakaoUser(KAKAOLoginTokenInfo kakaoToken) {
+    public User createKakaoUser(KAKAOLoginTokenInfo kakaoToken) {
 
         try {
-            URL url = new URL("https://kapi.kakao.com/v2/user/me");
+            URL url = new URL(userInfoUri); // user-info-uri
             HttpURLConnection conn = (HttpURLConnection)url.openConnection();
 
             conn.setRequestMethod("POST");
             conn.setDoOutput(true);
             conn.setRequestProperty("Authorization", kakaoToken.getAccess_token());
-
-            //결과 코드가 200이라면 성공
-            int responseCode = conn.getResponseCode();
-            System.out.println("responseCode : " + responseCode);
 
             //요청을 통해 얻은 JSON 타입의 Response 메세지 읽어오기
             BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
@@ -129,83 +137,13 @@ public class AccountService {
             System.out.println("response body : " + result);
 
             ObjectMapper mapper = new ObjectMapper();
-            mapper.configure(DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT, true);
-
-            String content = result.toString();
-            KakaoSample kakaoSample = mapper.readValue(content, KakaoSample.class);
-            System.out.println(kakaoSample.toString());
-
-            //Gson 라이브러리로 JSON 파싱
-            // JsonParser parser = new JsonParser();
-            // JsonElement element = parser.parse(result.toString());
-
-            // Long kakaoUserId = element.getAsJsonObject().get("id").getAsLong();
-            // JsonElement kakaoAccount = element.getAsJsonObject().get("kakao_account");
-            // JsonElement has_email = kakaoAccount.getAsJsonObject().get("has_email");
-            // boolean hasEmail = has_email.getAsBoolean();
-            // String email = "";
-            // if (kakaoSample.getAccount().isEmail()) {
-            //     email = kakaoSample.getAccount().getEmail();
-            // }
-            // JsonObject profile = kakaoAccount.getAsJsonObject()
-            //     .get("profile")
-            //     .getAsJsonObject();
-            // String nickName = profile
-            //     .get("nickname")
-            //     .getAsString();
-            // String thumbnailImage = profile
-            //     .get("thumbnail_image_url")
-            //     .getAsString();
-
-            // System.out.println("id : " + kakaoUserId);
-            // System.out.println("email : " + email);
-            // System.out.println("nickName = " + nickName);
-            // System.out.println("thumbnailImage = " + thumbnailImage);
-            User user = User.KAKAO()
-                .kakao(kakaoSample)
-                .password("111")
-                .token(kakaoToken)
-                .build();
-            User save = userRepository.save(user);
-            System.out.println(save);
+            KakaoSample kakaoSample = mapper.readValue(result.toString(), KakaoSample.class);
+            // User user = userRepository.save(new User(kakaoSample, "111", kakaoToken));
             br.close();
+            return new User(kakaoSample, "111", kakaoToken);
         } catch (IOException e) {
             e.printStackTrace();
+            return null;
         }
     }
-
-    // public KakaoInfo getInfo(final String token) {
-    //     log.debug("token = {}", token);
-    //     try {
-    //         return kakaoFeign.getUser(new URI("https://kauth.kakao.com/v2/user/me"), token);
-    //     } catch (Exception e) {
-    //         log.error("something error..", e);
-    //         return KakaoInfo.fail();
-    //     }
-    // }
-
-    // public Object getKakaoTokenWithInfo(String code) {
-    //     String userId = SocialType.K.getType() +"_" + getKakaoInfo(code).getId();
-    //     Users users = userRepository.findByLoginId(userId).orElse(null);
-    //     if(users == null){
-    //         return SocialInfoRes.newInstance(userId,socialRandomPassword(userId),SocialType.K);
-    //     }
-    //     return createToken(users);
-    // }
-    // private KTokenInfoRes getKakaoInfo(String code) {
-    //     return kakaoInfoFeignClient
-    //         .getInfo(
-    //             kakaoLoginFeignClient
-    //                 .getToken(
-    //                     KLoginTokenReq.newInstance(kakaoInfo, code).toString())
-    //                 .getAccess_token());
-    // }
-    // private String socialRandomPassword(String userId) {
-    //     String systemMil = String.valueOf(System.currentTimeMillis());
-    //     return passwordEncoder.encode(userId + systemMil);
-    // }
-    //
-    // private LoginRes createToken(Users user) {
-    //     return LoginRes.of(jwtProvider.createAccessToken(user.getLoginId(), user.getGroup().getFuncList()), jwtProvider.createRefreshToken(user.getLoginId()));
-    // }
 }

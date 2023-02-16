@@ -1,29 +1,30 @@
-spring:
-  security:
-    oauth2:
-      client:
-        registration:
-          kakao:
-            client-id: c3a459def82fa127f7238d078ece3a8e
-            client-secret: ForP4aA69xV10Kb7nrTy1XDZ7KEQFiMJ
-            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
-            authorization-grant-type: authorization_code
-            client-authentication-method: POST
-            client-name: Kakao
-#            scope:
-#              - profile
-#              - account_email
-#          naver:
-#            client-id: <your id>
-#            client-secret: <your secret>
-#            redirect-uri:  <your url>/login/oauth2/code/naver
+#spring:
+#  security:
+#    oauth2:
+#      client:
+#        registration:
+#          kakao:
+#            client-id: c3a459def82fa127f7238d078ece3a8e
+#            redirect-uri: http://localhost:8080/app/users/kakao
 #            authorization-grant-type: authorization_code
+#            client-authentication-method: POST
+#            client-name: Kakao
 #            scope:
-#              - name
 #              - email
-        provider:
-          kakao:
-            authorization-uri: https://kauth.kakao.com/oauth/authorize
-            token-uri: https://kauth.kakao.com/oauth/token
-            user-info-uri: https://kapi.kakao.com/v2/user/me
-            user-name-attribute: id
+##            scope:
+##              - profile
+##              - account_email
+##          naver:
+##            client-id: <your id>
+##            client-secret: <your secret>
+##            redirect-uri:  <your url>/login/oauth2/code/naver
+##            authorization-grant-type: authorization_code
+##            scope:
+##              - name
+##              - email
+#        provider:
+#          kakao:
+#            authorization-uri: https://kauth.kakao.com/oauth/authorize
+#            token-uri: https://kauth.kakao.com/oauth/token
+#            user-info-uri: https://kapi.kakao.com/v2/user/me
+#            user-name-attribute: id
