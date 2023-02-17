@@ -34,4 +34,6 @@ out/
 /.nb-gradle/
 
 ### VS Code ###
-.idea
+/.idea
+src/main/resources/application.yml
+src/main/resources/application-oauth2_client_server.yml
