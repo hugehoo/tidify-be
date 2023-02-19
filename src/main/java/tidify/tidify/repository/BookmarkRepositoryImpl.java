@@ -3,7 +3,13 @@ package tidify.tidify.repository;
 import java.util.Arrays;
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.support.PageableExecutionUtils;
+
 import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
 import lombok.RequiredArgsConstructor;
@@ -20,28 +26,49 @@ public class BookmarkRepositoryImpl implements BookmarkRepositoryCustom {
     private final QBookmark qBookmark = QBookmark.bookmark;
 
     @Override
-    public List<BookmarkResponse> findBookmarksWithFolderId(Long userId) {
+    public Page<BookmarkResponse> findBookmarksWithFolderId(Long userId, Pageable pageable) {
 
-        return query.select(new QBookmarkResponse(qBookmark, qFolder.id))
-            .from(qBookmark).where(qBookmark.userId.eq(userId))
+        List<BookmarkResponse> fetch = query.select(new QBookmarkResponse(qBookmark, qFolder.id))
+            .from(qBookmark)
+            .where(condition(userId))
             .leftJoin(qFolder)
             .on(qFolder.eq(qBookmark.folder))
+            .offset(pageable.getOffset())
+            .limit(pageable.getPageSize())
             .distinct()
             .fetch();
+
+        JPAQuery<Long> count = query.select(qBookmark.count())
+            .from(qBookmark)
+            .where(condition(userId));
+
+        return PageableExecutionUtils.getPage(fetch, pageable, count::fetchOne);
     }
 
     @Override
-    public List<BookmarkResponse> searchBookmarks(Long userId, String searchKeyword) {
+    public Page<BookmarkResponse> searchBookmarks(Long userId, String searchKeyword, Pageable pageable) {
         // 이거 매번 생성될 건데 성능고려해서 개선할 수 없나?
-        BooleanBuilder builder = searchKeywords(searchKeyword, new BooleanBuilder());
+        BooleanBuilder keywordBuilder = searchKeywords(searchKeyword, new BooleanBuilder());
 
-        return query.select(new QBookmarkResponse(qBookmark, qFolder.id))
-            .from(qBookmark).where(qBookmark.userId.eq(userId))
+        List<BookmarkResponse> fetch = query.select(new QBookmarkResponse(qBookmark, qFolder.id))
+            .from(qBookmark)
+            .where(condition(userId), keywordBuilder)
             .leftJoin(qFolder)
             .on(qFolder.eq(qBookmark.folder))
-            .where(builder)
+            .offset(pageable.getOffset())
+            .limit(pageable.getPageSize())
             .distinct()
             .fetch();
+
+        JPAQuery<Long> count = query.select(qBookmark.count())
+            .from(qBookmark)
+            .where(condition(userId), keywordBuilder);
+
+        return PageableExecutionUtils.getPage(fetch, pageable, count::fetchOne);
+    }
+
+    private BooleanExpression condition(Long userId) {
+        return qBookmark.userId.eq(userId).and(qBookmark.del.isFalse());
     }
 
     private BooleanBuilder searchKeywords(String searchKeyword, BooleanBuilder builder) {
