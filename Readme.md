@@ -4,8 +4,9 @@
 - [ ] createTime, updateTime 자동 변경 안되네. audity? 추가할것
 - [X] RestExceptionHandler
 - [ ] User 연관관계 매핑
-- [ ] Pagination
+- [X] Pagination + 정렬
 - [ ] ERD
+- [ ] Label Ehcache 
 - [ ] API 문서 - Swagger?
 - [ ] Log
 

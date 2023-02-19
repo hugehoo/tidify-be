@@ -1,7 +1,7 @@
 package tidify.tidify.service;
 
-import java.util.List;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,8 +26,15 @@ public class BookmarkService {
 
     @Description("folder 지정되지 않은 북마크도 모두 가져옴")
     @Transactional(readOnly = true)
-    public List<BookmarkResponse> getAllBookmarks(Long userId) {
-        return bookmarkRepository.findBookmarksWithFolderId(userId);
+    public Page<BookmarkResponse> getAllBookmarks(User user, Pageable pageable) {
+        Long userId = 24L;
+        return bookmarkRepository.findBookmarksWithFolderId(userId, pageable);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<BookmarkResponse> searchBookmarks(User user, String keyword, Pageable pageable) {
+        Long userId = 24L;
+        return bookmarkRepository.searchBookmarks(userId, keyword, pageable);
     }
 
     @Transactional
@@ -89,7 +96,4 @@ public class BookmarkService {
             .build();
     }
 
-    public List<BookmarkResponse> searchBookmarks(String keyword) {
-        return bookmarkRepository.searchBookmarks(24L, keyword);
-    }
 }
