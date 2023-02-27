@@ -54,7 +54,7 @@ public class AccountService {
 
         // access_token 으로 유저 정보를 kakao 에서 가져옴
         User kakaoUser = createKakaoUser(tokenInfo);
-        Token token = jwtTokenProvider.createToken(kakaoUser.getUsername(), List.of("User", "Admin"));
+        Token token = jwtTokenProvider.createToken(kakaoUser.getUsername());
         kakaoUser.setRefreshToken(token.getRefreshToken());
 
         Optional<User> user = userRepository.findUserByEmailAndDelFalse(kakaoUser.getEmail());
