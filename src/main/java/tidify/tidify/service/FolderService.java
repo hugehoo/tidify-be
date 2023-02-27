@@ -1,7 +1,5 @@
 package tidify.tidify.service;
 
-import java.util.List;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -15,7 +13,7 @@ import tidify.tidify.common.exception.ErrorTypes;
 import tidify.tidify.common.exception.ResourceNotFoundException;
 import tidify.tidify.repository.FolderRepository;
 import tidify.tidify.repository.UserRepository;
-import tidify.tidify.common.security.User;
+import tidify.tidify.domain.User;
 
 @Service
 @RequiredArgsConstructor
@@ -24,27 +22,23 @@ public class FolderService {
     private final FolderRepository folderRepository;
     private final UserRepository userRepository;
 
-    public Page<FolderResponse> getFolders(User userInfo, Pageable pageable) {
+    public Page<FolderResponse> getFolders(User user, Pageable pageable) {
         // String email = userInfo.getEmail();
-        // User user = userRepository
-        //     .findWithUserRolesByEmailAndDel(email, false)
+        // User user = userRepository.findUserByEmailAndDelFalse(email)
         //     .orElseThrow(() -> new ResourceNotFoundException(ErrorTypes.USER_NOT_FOUND_EXCEPTION, email));
-        Long userId = 24L;
-        return folderRepository.findFoldersWithCount(userId, pageable);
+        return folderRepository.findFoldersWithCount(user.getId(), pageable);
     }
 
     @Transactional
     public FolderResponse createFolder(FolderRequest request, User user) {
-        Long userId = 24L; // userId
-        Folder folder = Folder.of(request.getFolderName(), request.getLabel(), userId);
+        Folder folder = Folder.of(request.getFolderName(), request.getLabel(), user.getId());
         folderRepository.save(folder);
         return FolderResponse.of(folder);
     }
 
     @Transactional
     public FolderResponse modifyFolder(Long id, FolderRequest request, User user) {
-        Long userId = 24L;
-        Folder folder = getFolder(id, userId);
+        Folder folder = getFolder(id, user.getId());
         folder.modify(request.getFolderName(), request.getLabel());
 
         return FolderResponse.of(folder);
@@ -52,14 +46,13 @@ public class FolderService {
 
     @Transactional
     public void deleteFolder(Long id, User user) {
-        Long userId = 24L;
-        Folder folder = getFolder(id, userId);
+        Folder folder = getFolder(id, user.getId());
         folder.delete();
     }
 
     private Folder getFolder(Long id, Long userId) {
         return folderRepository
-            .findFolderByIdAndUserId(id, userId)
+            .findFolderByIdAndUserId(id, userId) // 이미 delete 된 건 못지우게 방어로직 추가
             .orElseThrow(() -> new ResourceNotFoundException(ErrorTypes.FOLDER_NOT_FOUND, id));
     }
 }
