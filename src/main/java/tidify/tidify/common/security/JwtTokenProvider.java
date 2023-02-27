@@ -38,11 +38,9 @@ public class JwtTokenProvider {
     @Value("${jwt.refresh-secret}")
     private String refreshSecretKey;
 
-    @Value("${jwt.accessExpired}")
-    private long tokenValidTime;
+    private long tokenValidTime = 60 * 60 * 1000L;
 
-    @Value("${jwt.refreshExpired}")
-    private long refreshTokenValidTime;
+    private long refreshTokenValidTime = 24* 60 * 60 * 1000L;
 
     List<String> roles = List.of("User", "Admin");
 

@@ -44,8 +44,7 @@ public class FolderController {
     @Operation(summary="폴더 생성")
     @PostMapping
     private ResponseEntity<FolderResponse> createFolders(
-        @AuthenticationPrincipal User user,
-        @RequestBody FolderRequest request) {
+        @AuthenticationPrincipal User user, @RequestBody FolderRequest request) {
         FolderResponse response = folderService.createFolder(request, user);
         return ResponseEntity.created(URI.create("/folder")).body(response);
     }

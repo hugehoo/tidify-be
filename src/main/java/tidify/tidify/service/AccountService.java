@@ -1,7 +1,6 @@
 package tidify.tidify.service;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -55,6 +54,7 @@ public class AccountService {
         // access_token 으로 유저 정보를 kakao 에서 가져옴
         User kakaoUser = createKakaoUser(tokenInfo);
         Token token = jwtTokenProvider.createToken(kakaoUser.getUsername());
+        kakaoUser.setAccessToken(token.getAccessToken());
         kakaoUser.setRefreshToken(token.getRefreshToken());
 
         Optional<User> user = userRepository.findUserByEmailAndDelFalse(kakaoUser.getEmail());

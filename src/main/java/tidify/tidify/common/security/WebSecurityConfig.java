@@ -26,6 +26,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
+        http.csrf().disable();
         http.httpBasic()
             .and()
             .authorizeRequests()
@@ -34,7 +35,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
             .antMatchers("/**").permitAll()
             .and()
             .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class);
-        // JwtAuthenticationFilter를 UsernamePasswordAuthenticationFilter 전에 넣는다
+            // JwtAuthenticationFilter를 UsernamePasswordAuthenticationFilter 전에 넣는다
 
     }
 
