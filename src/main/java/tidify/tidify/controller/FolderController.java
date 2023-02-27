@@ -2,21 +2,11 @@ package tidify.tidify.controller;
 
 
 import java.net.URI;
-import java.nio.file.attribute.UserPrincipal;
-import java.security.Principal;
-import java.util.List;
-
-import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -31,7 +21,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import tidify.tidify.dto.FolderRequest;
 import tidify.tidify.dto.FolderResponse;
-import tidify.tidify.common.security.User;
+import tidify.tidify.domain.User;
 import tidify.tidify.service.FolderService;
 
 @Api(tags = "폴더")

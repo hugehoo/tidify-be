@@ -9,9 +9,6 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.MultiValueMap;
@@ -27,7 +24,7 @@ import tidify.tidify.common.kakao.KakaoInfoResponse;
 import tidify.tidify.common.security.JwtTokenProvider;
 import tidify.tidify.common.security.Token;
 import tidify.tidify.repository.UserRepository;
-import tidify.tidify.common.security.User;
+import tidify.tidify.domain.User;
 
 @Slf4j
 @Service

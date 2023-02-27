@@ -13,7 +13,7 @@ import tidify.tidify.common.exception.ErrorTypes;
 import tidify.tidify.common.exception.ResourceNotFoundException;
 import tidify.tidify.repository.FolderRepository;
 import tidify.tidify.repository.UserRepository;
-import tidify.tidify.common.security.User;
+import tidify.tidify.domain.User;
 
 @Service
 @RequiredArgsConstructor

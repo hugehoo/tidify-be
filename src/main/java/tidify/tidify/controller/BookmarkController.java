@@ -21,7 +21,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import tidify.tidify.dto.BookmarkRequest;
 import tidify.tidify.dto.BookmarkResponse;
-import tidify.tidify.common.security.User;
+import tidify.tidify.domain.User;
 import tidify.tidify.service.BookmarkService;
 
 @Api(tags = "북마크")
