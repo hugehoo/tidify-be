@@ -10,7 +10,6 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import tidify.tidify.common.security.BaseEntity;
 
 @Getter
 @Entity(name = "bookmark")
