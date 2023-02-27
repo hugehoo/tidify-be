@@ -27,21 +27,18 @@ public class BookmarkService {
     @Description("folder 지정되지 않은 북마크도 모두 가져옴")
     @Transactional(readOnly = true)
     public Page<BookmarkResponse> getAllBookmarks(User user, Pageable pageable) {
-        Long userId = 24L;
-        return bookmarkRepository.findBookmarksWithFolderId(userId, pageable);
+        return bookmarkRepository.findBookmarksWithFolderId(user.getId(), pageable);
     }
 
     @Transactional(readOnly = true)
     public Page<BookmarkResponse> searchBookmarks(User user, String keyword, Pageable pageable) {
-        Long userId = 24L;
-        return bookmarkRepository.searchBookmarks(userId, keyword, pageable);
+        return bookmarkRepository.searchBookmarks(user.getId(), keyword, pageable);
     }
 
     @Transactional
     public BookmarkResponse createBookmark(BookmarkRequest request, User user) {
 
-        Long userId = 24L;
-        Bookmark bookmark = buildBookmark(request, userId);
+        Bookmark bookmark = buildBookmark(request, user.getId());
         bookmarkRepository.save(bookmark);
         return BookmarkResponse.of(bookmark, request.getFolderId());
     }
@@ -49,7 +46,7 @@ public class BookmarkService {
     @Transactional
     public BookmarkResponse.BookmarkModifyResponse modifyBookmark(Long id, User user, BookmarkRequest request) {
 
-        Long userId = 24L;
+        Long userId = user.getId();
         Long folderId = request.getFolderId();
         Folder folder = getFolder(folderId, userId);
         Bookmark bookmark = getBookmark(id, userId);
@@ -60,8 +57,7 @@ public class BookmarkService {
 
     @Transactional
     public void deleteBookmark(Long id, User user) {
-        long userId = 24L;
-        Bookmark bookmark = getBookmark(id, userId);
+        Bookmark bookmark = getBookmark(id, user.getId());
         bookmark.delete();
     }
 

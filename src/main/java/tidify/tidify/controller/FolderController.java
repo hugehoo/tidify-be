@@ -2,11 +2,21 @@ package tidify.tidify.controller;
 
 
 import java.net.URI;
+import java.nio.file.attribute.UserPrincipal;
+import java.security.Principal;
 import java.util.List;
+
+import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -32,16 +42,20 @@ public class FolderController {
 
     private final FolderService folderService;
 
-    @Operation(summary="폴더 조회", description="유저의 폴더 조회")
+    @Operation(summary = "폴더 조회", description = "유저의 폴더 조회")
     @GetMapping("/folder")
-    private Page<FolderResponse> getFolders(User user, Pageable pageable) {
+    private Page<FolderResponse> getFolders(
+        @AuthenticationPrincipal User user,
+        Pageable pageable
+    ) {
         return folderService.getFolders(user, pageable);
     }
 
     @Operation(summary="폴더 생성")
     @PostMapping
-    private ResponseEntity<FolderResponse> createFolders(@RequestBody FolderRequest request) {
-        User user = null;
+    private ResponseEntity<FolderResponse> createFolders(
+        @AuthenticationPrincipal User user,
+        @RequestBody FolderRequest request) {
         FolderResponse response = folderService.createFolder(request, user);
         return ResponseEntity.created(URI.create("/folder")).body(response);
     }
@@ -50,10 +64,9 @@ public class FolderController {
     @Operation(summary="폴더 수정", description="폴더 정보(이름, 라벨) 수정")
     @PatchMapping("/{folderId}")
     private ResponseEntity<FolderResponse> modifyFolders(
+        @AuthenticationPrincipal User user,
         @PathVariable("folderId") Long folderId,
         @RequestBody FolderRequest request) {
-
-        User user = null;
         FolderResponse response = folderService.modifyFolder(folderId, request, user);
         return ResponseEntity.ok().body(response);
     }
@@ -62,10 +75,9 @@ public class FolderController {
     @Operation(summary="폴더 삭제")
     @DeleteMapping("/{folderId}")
     private ResponseEntity<Void> deleteFolders(
+        @AuthenticationPrincipal User user,
         @PathVariable("folderId") Long folderId,
         @RequestBody FolderRequest request) {
-
-        User user = null;
         folderService.deleteFolder(folderId, user);
         return ResponseEntity.noContent().build();
     }

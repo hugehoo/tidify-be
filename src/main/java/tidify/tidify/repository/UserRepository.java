@@ -1,0 +1,17 @@
+package tidify.tidify.repository;
+
+import java.util.Optional;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import tidify.tidify.common.security.User;
+
+@Repository
+public interface UserRepository extends JpaRepository<User, Long> {
+
+    Optional<User> findUserByEmailAndDelFalse(String email);
+
+    boolean existsByRefreshToken(String refreshToken);
+}
+

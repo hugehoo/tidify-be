@@ -1,7 +1,5 @@
 package tidify.tidify.service;
 
-import java.util.List;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -24,13 +22,11 @@ public class FolderService {
     private final FolderRepository folderRepository;
     private final UserRepository userRepository;
 
-    public Page<FolderResponse> getFolders(User userInfo, Pageable pageable) {
+    public Page<FolderResponse> getFolders(User user, Pageable pageable) {
         // String email = userInfo.getEmail();
-        // User user = userRepository
-        //     .findWithUserRolesByEmailAndDel(email, false)
+        // User user = userRepository.findUserByEmailAndDelFalse(email)
         //     .orElseThrow(() -> new ResourceNotFoundException(ErrorTypes.USER_NOT_FOUND_EXCEPTION, email));
-        Long userId = 24L;
-        return folderRepository.findFoldersWithCount(userId, pageable);
+        return folderRepository.findFoldersWithCount(user.getId(), pageable);
     }
 
     @Transactional
