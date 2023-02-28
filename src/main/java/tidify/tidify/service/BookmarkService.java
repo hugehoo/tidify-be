@@ -47,11 +47,11 @@ public class BookmarkService {
     public BookmarkResponse.BookmarkModifyResponse modifyBookmark(Long id, User user, BookmarkRequest request) {
 
         Long userId = user.getId();
-        Long folderId = request.getFolderId();
-        Folder folder = getFolder(folderId, userId);
-        Bookmark bookmark = getBookmark(id, userId);
+        Folder folder = getFolder(request.getFolderId(), userId);
 
+        Bookmark bookmark = getBookmark(id, userId);
         bookmark.moidfy(request.getUrl(), request.getName(), folder);
+
         return new BookmarkResponse.BookmarkModifyResponse(request);
     }
 
