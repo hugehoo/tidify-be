@@ -1,6 +1,7 @@
 package tidify.tidify.service;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -10,6 +11,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
@@ -48,13 +50,21 @@ public class AccountService {
     private final KAKAOFeign kakaoFeign;
     private final UserRepository userRepository;
 
-    public Token getKAKAOAccessTokenFeign(String authorizationCode) {
-        KAKAOLoginTokenInfo tokenInfo = kakaoFeign.getAccessToken(grantType, clientId, redirectUri, authorizationCode);
 
+    // @Transactional
+    // public Token getAppleAccessTokenFeign(String authorizationCode) {
+    //     // appleFeign
+    //
+    // }
+
+    @Transactional
+    public Token getKakaoAccessTokenFeign(String authorizationCode) {
+        KAKAOLoginTokenInfo tokenInfo = kakaoFeign.getAccessToken(grantType, clientId, redirectUri, authorizationCode);
+        log.info(tokenInfo.toString());
         // access_token 으로 유저 정보를 kakao 에서 가져옴
-        User kakaoUser = createKakaoUser(tokenInfo);
+        User kakaoUser = createKakaoUser(tokenInfo); // jwt 로는 유저 이메일만 가져온다. 아님 유저 다 가져와야함
         Token token = jwtTokenProvider.createToken(kakaoUser.getUsername());
-        kakaoUser.setAccessToken(token.getAccessToken());
+        // kakaoUser.setAccessToken(token.getAccessToken());
         kakaoUser.setRefreshToken(token.getRefreshToken());
 
         Optional<User> user = userRepository.findUserByEmailAndDelFalse(kakaoUser.getEmail());
@@ -83,7 +93,6 @@ public class AccountService {
         headers.add("Authorization", kakaoToken.getAccess_token());
         headers.add("Content-type", "application/x-www-form-urlencoded;charset=utf-8");
         HttpEntity<MultiValueMap<String, String>> profileRequest = new HttpEntity<>(headers);
-        ResponseEntity<String> response2 = rt2.exchange(url, HttpMethod.POST, profileRequest, String.class);
-        return response2;
+        return rt2.exchange(url, HttpMethod.POST, profileRequest, String.class);
     }
 }

@@ -34,9 +34,8 @@ public class BookmarkController {
     @GetMapping
     @Operation(summary="북마크 조회", description="유저의 북마크를 조회")
     private Page<BookmarkResponse> getBookmarks(
-        @AuthenticationPrincipal User user,
-        Pageable pageable) {
-
+        @AuthenticationPrincipal User user, Pageable pageable
+    ) {
         return bookmarkService.getAllBookmarks(user, pageable);
     }
 
@@ -54,7 +53,8 @@ public class BookmarkController {
     @Operation(summary="북마크 생성", description="북마크를 생성")
     private ResponseEntity<BookmarkResponse> createBookmark(
         @AuthenticationPrincipal User user,
-        @RequestBody BookmarkRequest request) {
+        @RequestBody BookmarkRequest request
+    ) {
         BookmarkResponse bookmarks = bookmarkService.createBookmark(request, user);
         return ResponseEntity.created(URI.create("/bookmark")).body(bookmarks);
     }
@@ -66,7 +66,6 @@ public class BookmarkController {
         @PathVariable("bookmarkId") Long bookmarkId,
         @RequestBody BookmarkRequest request
     ) {
-
         BookmarkResponse.BookmarkModifyResponse bookmarks = bookmarkService.modifyBookmark(bookmarkId, user, request);
         return ResponseEntity.ok().body(bookmarks);
     }

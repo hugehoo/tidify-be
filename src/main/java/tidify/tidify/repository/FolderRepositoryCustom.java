@@ -1,13 +1,12 @@
 package tidify.tidify.repository;
 
-import java.util.List;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import tidify.tidify.domain.User;
 import tidify.tidify.dto.FolderResponse;
 
 public interface FolderRepositoryCustom {
-    Page<FolderResponse> findFoldersWithCount(Long userId, Pageable pageable);
+    Page<FolderResponse> findFoldersWithCount(User user, Pageable pageable);
 
 }

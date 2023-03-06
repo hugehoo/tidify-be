@@ -15,6 +15,7 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import tidify.tidify.domain.QBookmark;
 import tidify.tidify.domain.QFolder;
+import tidify.tidify.domain.User;
 import tidify.tidify.dto.BookmarkResponse;
 import tidify.tidify.dto.QBookmarkResponse;
 
@@ -26,12 +27,12 @@ public class BookmarkRepositoryImpl implements BookmarkRepositoryCustom {
     private final QBookmark qBookmark = QBookmark.bookmark;
 
     @Override
-    public Page<BookmarkResponse> findBookmarksWithFolderId(Long userId, Pageable pageable) {
+    public Page<BookmarkResponse> findBookmarksWithFolderId(User user, Pageable pageable) {
 
         List<BookmarkResponse> fetch = query
             .select(new QBookmarkResponse(qBookmark, qFolder.id))
             .from(qBookmark)
-            .where(condition(userId))
+            .where(condition(user))
             .leftJoin(qFolder)
             .on(qFolder.eq(qBookmark.folder))
             .offset(pageable.getOffset())
@@ -40,19 +41,19 @@ public class BookmarkRepositoryImpl implements BookmarkRepositoryCustom {
 
         JPAQuery<Long> count = query.select(qBookmark.count())
             .from(qBookmark)
-            .where(condition(userId));
+            .where(condition(user));
 
         return PageableExecutionUtils.getPage(fetch, pageable, count::fetchOne);
     }
 
     @Override
-    public Page<BookmarkResponse> searchBookmarks(Long userId, String searchKeyword, Pageable pageable) {
+    public Page<BookmarkResponse> searchBookmarks(User user, String searchKeyword, Pageable pageable) {
         // 이거 매번 생성될 건데 성능고려해서 개선할 수 없나?
         BooleanBuilder keywordBuilder = searchKeywords(searchKeyword, new BooleanBuilder());
 
         List<BookmarkResponse> fetch = query.select(new QBookmarkResponse(qBookmark, qFolder.id))
             .from(qBookmark)
-            .where(condition(userId), keywordBuilder)
+            .where(condition(user), keywordBuilder)
             .leftJoin(qFolder)
             .on(qFolder.eq(qBookmark.folder))
             .offset(pageable.getOffset())
@@ -62,13 +63,13 @@ public class BookmarkRepositoryImpl implements BookmarkRepositoryCustom {
 
         JPAQuery<Long> count = query.select(qBookmark.count())
             .from(qBookmark)
-            .where(condition(userId), keywordBuilder);
+            .where(condition(user), keywordBuilder);
 
         return PageableExecutionUtils.getPage(fetch, pageable, count::fetchOne);
     }
 
-    private BooleanExpression condition(Long userId) {
-        return qBookmark.userId.eq(userId).and(qBookmark.del.isFalse());
+    private BooleanExpression condition(User user) {
+        return qBookmark.user.eq(user).and(qBookmark.del.isFalse());
     }
 
     private BooleanBuilder searchKeywords(String searchKeyword, BooleanBuilder builder) {

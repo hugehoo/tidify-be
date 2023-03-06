@@ -1,5 +1,7 @@
 package tidify.tidify.common.security;
 
+import static tidify.tidify.common.Constants.*;
+
 import java.util.Date;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -10,12 +12,15 @@ import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import tidify.tidify.domain.User;
 import tidify.tidify.repository.UserRepository;
 
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
@@ -26,6 +31,7 @@ import java.util.List;
 
 @RequiredArgsConstructor
 @Component
+@Slf4j
 public class JwtTokenProvider {
 
     private final UserDetailsService userDetailsService;
@@ -37,10 +43,6 @@ public class JwtTokenProvider {
 
     @Value("${jwt.refresh-secret}")
     private String refreshSecretKey;
-
-    private long tokenValidTime = 60 * 60 * 1000L;
-
-    private long refreshTokenValidTime = 24* 60 * 60 * 1000L;
 
     List<String> roles = List.of("User", "Admin");
 
@@ -62,15 +64,16 @@ public class JwtTokenProvider {
             .build();
     }
 
-    private String createRefreshToken(String userName) {
+    public String createRefreshToken(String userName) {
         Claims claims = Jwts.claims().setSubject(userName);
         claims.put("roles", roles);
         Date now = new Date();
-
-        return  Jwts.builder()
+        Date date = new Date(now.getTime());
+        log.info("refreshToken : {}", date);
+        return Jwts.builder()
             .setClaims(claims)
             .setIssuedAt(now)
-            .setExpiration(new Date(now.getTime() + refreshTokenValidTime))
+            .setExpiration(new Date(now.getTime() + REFRESH_TOKEN_VALID_TIME))
             .signWith(SignatureAlgorithm.HS256, refreshSecretKey)
             .compact();
     }
@@ -103,8 +106,12 @@ public class JwtTokenProvider {
     }
 
     public boolean validateRefreshToken(String refreshToken) {
-        Jws<Claims> claims = Jwts.parser().setSigningKey(refreshSecretKey).parseClaimsJws(refreshToken);
-        return !claims.getBody().getExpiration().before(new Date());
+        try {
+            Jws<Claims> claims = Jwts.parser().setSigningKey(refreshSecretKey).parseClaimsJws(refreshToken);
+            return !claims.getBody().getExpiration().before(new Date());
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     public String resolveRefreshToken(HttpServletRequest request) {
@@ -119,6 +126,15 @@ public class JwtTokenProvider {
         return userRepository.existsByRefreshToken(refreshToken);
     }
 
+    public User findByRefreshToken(String refreshToken) {
+        return userRepository.findUserByRefreshToken(refreshToken);
+    }
+
+    @Transactional
+    public void saveRefreshToken(User user) {
+        userRepository.save(user);
+    }
+
     public String createAccessToken(String userName) {
 
         Claims claims = Jwts.claims().setSubject(userName); // JWT payload 에 저장되는 정보단위
@@ -128,12 +144,12 @@ public class JwtTokenProvider {
         return Jwts.builder()
             .setClaims(claims) // 정보 저장
             .setIssuedAt(now) // 토큰 발행 시간 정보
-            .setExpiration(new Date(now.getTime() + tokenValidTime))
+            .setExpiration(new Date(now.getTime() + TOKEN_VALID_TIME))
             .signWith(SignatureAlgorithm.HS256, secretKey)
             .compact();
     }
 
     public void setHeaderAccessToken(HttpServletResponse response, String accessToken) {
-        response.setHeader("authorization", "bearer "+ accessToken);
+        response.setHeader("authorization", "bearer " + accessToken);
     }
 }

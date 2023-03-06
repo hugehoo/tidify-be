@@ -4,6 +4,8 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
+import javax.persistence.ManyToOne;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -18,9 +20,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Folder extends BaseEntity {
 
-    // TODO : 시큐리티 완성 짓고 제대로 연관관계 매핑
-    @Column(name = "user_id")
-    private Long userId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    private User user;
 
     @Column(name = "name")
     private String name;
@@ -29,11 +30,11 @@ public class Folder extends BaseEntity {
     @Column(name = "label")
     private LabelType label;
 
-    public static Folder of(String name, LabelType type, Long userId) {
+    public static Folder of(String name, LabelType type, User user) {
         return Folder.builder()
             .name(name)
             .label(type)
-            .userId(userId)
+            .user(user)
             .build();
     }
 

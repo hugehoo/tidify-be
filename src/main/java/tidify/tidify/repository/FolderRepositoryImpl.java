@@ -3,7 +3,6 @@ package tidify.tidify.repository;
 import java.util.List;
 
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.support.PageableExecutionUtils;
 
@@ -14,6 +13,7 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import tidify.tidify.domain.QBookmark;
 import tidify.tidify.domain.QFolder;
+import tidify.tidify.domain.User;
 import tidify.tidify.dto.FolderResponse;
 import tidify.tidify.dto.QFolderResponse;
 
@@ -25,8 +25,8 @@ public class FolderRepositoryImpl implements FolderRepositoryCustom {
     private final QBookmark qBookmark = QBookmark.bookmark;
 
     @Override
-    public Page<FolderResponse> findFoldersWithCount(Long userId, Pageable pageable) {
-        BooleanExpression whereClause = qFolder.userId.eq(userId)
+    public Page<FolderResponse> findFoldersWithCount(User user, Pageable pageable) {
+        BooleanExpression whereClause = qFolder.user.eq(user)
             .and(qFolder.del.isFalse());
 
         List<FolderResponse> fetch = query.select(new QFolderResponse(qFolder, qBookmark.count()))
@@ -43,9 +43,7 @@ public class FolderRepositoryImpl implements FolderRepositoryCustom {
             .where(whereClause);
 
         assert (count != null);
-        return PageableExecutionUtils.getPage(fetch, pageable, count::fetchOne); // fetchCount 가 deprecated 된다고 하니.
-        // 왜 deprecated 되지 fetchCount?
-        // return new PageImpl<>(fetch, pageable, count.fetchOne());
+        return PageableExecutionUtils.getPage(fetch, pageable, count::fetchOne);
     }
 
 }
