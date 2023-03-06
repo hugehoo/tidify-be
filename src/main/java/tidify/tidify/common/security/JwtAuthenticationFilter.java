@@ -11,16 +11,22 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.filter.GenericFilterBean;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import tidify.tidify.domain.User;
 
+
+@Slf4j
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends GenericFilterBean {
 
     private final JwtTokenProvider jwtTokenProvider;
 
     @Override
+    @Transactional
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
         throws IOException, ServletException {
 
@@ -30,26 +36,40 @@ public class JwtAuthenticationFilter extends GenericFilterBean {
             setAuthentication(accessToken);
         }
         else if (!jwtTokenProvider.validateToken(accessToken) && refreshToken != null) {
-            // 재발급 후, 컨텍스트에 다시 넣기
-            /// 리프레시 토큰 검증
             boolean validateRefreshToken = jwtTokenProvider.validateRefreshToken(refreshToken);
-            /// 리프레시 토큰 저장소 존재유무 확인
             boolean isRefreshToken = jwtTokenProvider.existsRefreshToken(refreshToken);
             if (validateRefreshToken && isRefreshToken) {
-                /// 리프레시 토큰으로 이메일 정보 가져오기
-                String email = jwtTokenProvider.getUserPk(refreshToken, true);
-                // 이메일로 권한정보 받아오기
-                // List<String> roles = jwtTokenProvider.getRoles(email);
-
-                /// 토큰 발급
-                String newAccessToken = jwtTokenProvider.createAccessToken(email);
-                /// 헤더에 어세스 토큰 추가
-                jwtTokenProvider.setHeaderAccessToken((HttpServletResponse)response, newAccessToken);
-                /// 컨텍스트에 넣기
-                this.setAuthentication(newAccessToken);
+                reIssueAccessToken((HttpServletResponse)response, refreshToken);
+            } else if(isRefreshToken){
+                // userName을 못 가져오구나 -> 하지만 야매로 refreshToken 으로 조회하면 되지
+                User user = jwtTokenProvider.findByRefreshToken(refreshToken);
+                // Token token = jwtTokenProvider.createToken(user.getUsername());
+                String newRefreshToken = jwtTokenProvider.createRefreshToken(user.getUsername());
+                user.setRefreshToken(newRefreshToken);
+                jwtTokenProvider.saveRefreshToken(user);
+                log.info("Re-Issued RefreshToken : {}", newRefreshToken);
+                reIssueAccessToken((HttpServletResponse)response, newRefreshToken);
             }
         }
         chain.doFilter(request, response);
+    }
+
+    private void reIssueAccessToken(HttpServletResponse response, String refreshToken) {
+        /// 리프레시 토큰으로 이메일 정보 가져오기
+        String email = jwtTokenProvider.getUserPk(refreshToken, true);
+
+        // 이메일로 권한정보 받아오기
+        // List<String> roles = jwtTokenProvider.getRoles(email);
+
+        /// 토큰 발급
+        String newAccessToken = jwtTokenProvider.createAccessToken(email);
+
+        /// 헤더에 어세스 토큰 추가
+        jwtTokenProvider.setHeaderAccessToken(response, newAccessToken);
+        log.info("Re-Issued AccessToken : {}", newAccessToken);
+
+        /// 컨텍스트에 넣기
+        this.setAuthentication(newAccessToken);
     }
 
     // SecurityContext 에 Authentication 객체를 저장합니다.

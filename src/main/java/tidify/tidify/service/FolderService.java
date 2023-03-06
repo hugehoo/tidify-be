@@ -12,7 +12,6 @@ import tidify.tidify.dto.FolderResponse;
 import tidify.tidify.common.exception.ErrorTypes;
 import tidify.tidify.common.exception.ResourceNotFoundException;
 import tidify.tidify.repository.FolderRepository;
-import tidify.tidify.repository.UserRepository;
 import tidify.tidify.domain.User;
 
 @Service
@@ -20,18 +19,14 @@ import tidify.tidify.domain.User;
 public class FolderService {
 
     private final FolderRepository folderRepository;
-    private final UserRepository userRepository;
 
     public Page<FolderResponse> getFolders(User user, Pageable pageable) {
-        // String email = userInfo.getEmail();
-        // User user = userRepository.findUserByEmailAndDelFalse(email)
-        //     .orElseThrow(() -> new ResourceNotFoundException(ErrorTypes.USER_NOT_FOUND_EXCEPTION, email));
-        return folderRepository.findFoldersWithCount(user.getId(), pageable);
+        return folderRepository.findFoldersWithCount(user, pageable);
     }
 
     @Transactional
     public FolderResponse createFolder(FolderRequest request, User user) {
-        Folder folder = Folder.of(request.getFolderName(), request.getLabel(), user.getId());
+        Folder folder = Folder.of(request.getFolderName(), request.getLabel(), user);
         folderRepository.save(folder);
         return FolderResponse.of(folder);
     }

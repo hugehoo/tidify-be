@@ -16,9 +16,9 @@ public class OAuthController {
 
     private final AccountService userService;
 
-    // @GetMapping("authorize")
+
     @GetMapping("login/kakao")
-    public Token KAKAORedirect(@RequestParam String code) {
-        return userService.getKAKAOAccessTokenFeign(code);
+    public Token getKakaoToken(@RequestParam String code) {
+        return userService.getKakaoAccessTokenFeign(code);
     }
 }
