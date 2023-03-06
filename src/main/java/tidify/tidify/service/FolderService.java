@@ -33,7 +33,7 @@ public class FolderService {
 
     @Transactional
     public FolderResponse modifyFolder(Long id, FolderRequest request, User user) {
-        Folder folder = getFolder(id, user.getId());
+        Folder folder = getFolder(id, user);
         folder.modify(request.getFolderName(), request.getLabel());
 
         return FolderResponse.of(folder);
@@ -41,13 +41,13 @@ public class FolderService {
 
     @Transactional
     public void deleteFolder(Long id, User user) {
-        Folder folder = getFolder(id, user.getId());
+        Folder folder = getFolder(id, user);
         folder.delete();
     }
 
-    private Folder getFolder(Long id, Long userId) {
+    private Folder getFolder(Long id, User user) {
         return folderRepository
-            .findFolderByIdAndUserId(id, userId) // 이미 delete 된 건 못지우게 방어로직 추가
+            .findFolderByIdAndUser(id, user) // 이미 delete 된 건 못지우게 방어로직 추가
             .orElseThrow(() -> new ResourceNotFoundException(ErrorTypes.FOLDER_NOT_FOUND, id));
     }
 }

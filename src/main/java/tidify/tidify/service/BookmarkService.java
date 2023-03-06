@@ -27,18 +27,18 @@ public class BookmarkService {
     @Description("folder 지정되지 않은 북마크도 모두 가져옴")
     @Transactional(readOnly = true)
     public Page<BookmarkResponse> getAllBookmarks(User user, Pageable pageable) {
-        return bookmarkRepository.findBookmarksWithFolderId(user.getId(), pageable);
+        return bookmarkRepository.findBookmarksWithFolderId(user, pageable);
     }
 
     @Transactional(readOnly = true)
     public Page<BookmarkResponse> searchBookmarks(User user, String keyword, Pageable pageable) {
-        return bookmarkRepository.searchBookmarks(user.getId(), keyword, pageable);
+        return bookmarkRepository.searchBookmarks(user, keyword, pageable);
     }
 
     @Transactional
     public BookmarkResponse createBookmark(BookmarkRequest request, User user) {
 
-        Bookmark bookmark = buildBookmark(request, user.getId());
+        Bookmark bookmark = buildBookmark(request, user);
         bookmarkRepository.save(bookmark);
         return BookmarkResponse.of(bookmark, request.getFolderId());
     }
@@ -47,7 +47,7 @@ public class BookmarkService {
     public BookmarkResponse.BookmarkModifyResponse modifyBookmark(Long id, User user, BookmarkRequest request) {
 
         Long userId = user.getId();
-        Folder folder = getFolder(request.getFolderId(), userId);
+        Folder folder = getFolder(request.getFolderId(), user);
 
         Bookmark bookmark = getBookmark(id, userId);
         bookmark.moidfy(request.getUrl(), request.getName(), folder);
@@ -67,12 +67,12 @@ public class BookmarkService {
             .orElseThrow(() -> new ResourceNotFoundException(ErrorTypes.BOOKMARK_NOT_FOUND, id));
     }
 
-    private Folder getFolder(Long folderId, Long userId) {
-        return folderRepository.findFolderByIdAndUserId(folderId, userId)
+    private Folder getFolder(Long folderId, User user) {
+        return folderRepository.findFolderByIdAndUser(folderId, user)
             .orElseThrow(() -> new ResourceNotFoundException(ErrorTypes.FOLDER_NOT_FOUND, folderId));
     }
 
-    private Bookmark buildBookmark(BookmarkRequest request, Long userId) {
+    private Bookmark buildBookmark(BookmarkRequest request, User user) {
 
         Long folderId = request.getFolderId();
         Folder folder = null;
@@ -82,13 +82,13 @@ public class BookmarkService {
 
         long NO_FOLDER_ID = 0L;
         if (!folderId.equals(NO_FOLDER_ID)) {
-            folder = getFolder(folderId, userId);
+            folder = getFolder(folderId, user);
         }
         return Bookmark.create()
             .name(request.getName())
             .url(request.getUrl())
             .folder(folder)
-            .userId(userId)
+            .user(user)
             .build();
     }
 
