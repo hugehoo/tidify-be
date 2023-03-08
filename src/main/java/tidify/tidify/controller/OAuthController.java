@@ -19,6 +19,6 @@ public class OAuthController {
 
     @GetMapping("login/kakao")
     public Token getKakaoToken(@RequestParam String code) {
-        return userService.getKakaoAccessTokenFeign(code);
+        return userService.createToken(code);
     }
 }
