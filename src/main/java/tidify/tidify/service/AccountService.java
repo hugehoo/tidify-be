@@ -39,10 +39,20 @@ public class AccountService {
     private void createUser(String userEmail, Token token, SocialType type) {
         String password = passwordEncoder.encode(userEmail);
         UserDto userDto = new UserDto(userEmail, password, token.getAccessToken(), token.getRefreshToken());
-        User user = socialLoginFactory.getSocialType(type).apply(userDto);
-        Optional<User> findUser = userRepository.findUserByEmailAndDelFalse(user.getEmail());
-        if (findUser.isEmpty()) {
-            userRepository.save(user);
-        } // TODO : findUser 가 존재할 때도 refreshToken 을 갱신해야 하지 않을까? 다시 로그인 했다는 건, 두 토큰이 모두 만료됐단 뜻이니까.
+        userRepository.findUserByEmailAndDelFalse(userEmail)
+            .ifPresentOrElse(
+                user -> updateTokens(token, user),
+                () -> saveUser(type, userDto)
+            );
+    }
+
+    private void saveUser(SocialType type, UserDto userDto) {
+        User newUser = socialLoginFactory.getSocialType(type).apply(userDto);
+        userRepository.save(newUser);
+    }
+
+    private void updateTokens(Token token, User user) {
+        user.setAccessToken(token.getAccessToken());
+        user.setRefreshToken(token.getRefreshToken());
     }
 }
