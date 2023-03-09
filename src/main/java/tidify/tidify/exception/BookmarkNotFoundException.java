@@ -1,4 +1,4 @@
-package tidify.tidify.common.exception;
+package tidify.tidify.exception;
 
 public class BookmarkNotFoundException extends RuntimeException {
 }

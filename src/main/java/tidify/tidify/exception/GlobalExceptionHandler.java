@@ -1,4 +1,4 @@
-package tidify.tidify.common.exception;
+package tidify.tidify.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

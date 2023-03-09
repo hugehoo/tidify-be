@@ -1,4 +1,4 @@
-package tidify.tidify.common.kakao;
+package tidify.tidify.oauth.kakao;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -11,9 +11,9 @@ import lombok.ToString;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class KakaoInfoResponse {
     private Long id;
-    private KAKAOProperty properties;
+    private KakaoProperty properties;
 
     @JsonProperty(value = "kakao_account")
-    private KAKAOProperty account;
+    private KakaoProperty account;
 
 }

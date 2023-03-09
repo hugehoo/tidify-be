@@ -9,8 +9,8 @@ import lombok.RequiredArgsConstructor;
 import tidify.tidify.domain.Folder;
 import tidify.tidify.dto.FolderRequest;
 import tidify.tidify.dto.FolderResponse;
-import tidify.tidify.common.exception.ErrorTypes;
-import tidify.tidify.common.exception.ResourceNotFoundException;
+import tidify.tidify.exception.ErrorTypes;
+import tidify.tidify.exception.ResourceNotFoundException;
 import tidify.tidify.repository.FolderRepository;
 import tidify.tidify.domain.User;
 

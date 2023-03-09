@@ -1,4 +1,4 @@
-package tidify.tidify.common.security;
+package tidify.tidify.security;
 
 import static tidify.tidify.common.Constants.*;
 
@@ -126,7 +126,7 @@ public class JwtTokenProvider {
         return userRepository.existsByRefreshToken(refreshToken);
     }
 
-    public User findByRefreshToken(String refreshToken) {
+    public User findUserByRefreshToken(String refreshToken) {
         return userRepository.findUserByRefreshToken(refreshToken);
     }
 

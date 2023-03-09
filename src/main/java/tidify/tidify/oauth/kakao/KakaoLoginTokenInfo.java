@@ -1,4 +1,4 @@
-package tidify.tidify.common.kakao;
+package tidify.tidify.oauth.kakao;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -7,7 +7,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-public class KAKAOLoginTokenInfo {
+public class KakaoLoginTokenInfo {
 
     private String access_token;
     private String expires_in;

@@ -1,4 +1,4 @@
-package tidify.tidify.common.security;
+package tidify.tidify.security;
 
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
