@@ -24,8 +24,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.Singular;
-import tidify.tidify.common.kakao.KAKAOLoginTokenInfo;
-import tidify.tidify.common.kakao.KakaoInfoResponse;
 
 @Getter
 @Setter
@@ -43,8 +41,8 @@ public class User extends BaseEntity implements UserDetails {
     @Column(nullable = false, unique = true, length = 100)
     private String email;
 
-    @Column(nullable = false, length = 50)
-    private String name;
+    // @Column(nullable = false, length = 50)
+    // private String name;
 
     @JsonIgnore
     @Column(nullable = false, length = 150)
@@ -76,32 +74,36 @@ public class User extends BaseEntity implements UserDetails {
     //
 
     @Builder
-    public User(String name, String email, RoleType role) {
-        this.name = name;
+    public User(String email, String password, String accessToken, String refreshToken, SocialType socialtype) {
         this.email = email;
+        this.password = password;
+        this.accessToken = accessToken;
+        this.refreshToken = refreshToken;
+        this.socialType = socialtype;
     }
 
-    // @Builder(builderMethodName = "KAKAO")
-    public User(KakaoInfoResponse kakao, String password,
-        KAKAOLoginTokenInfo token) {
-        this.type = "0";
-        this.name = kakao.getProperties().getNickName();
-        this.accessToken = token.getAccess_token();
-        this.refreshToken = token.getRefresh_token();
-        this.email = kakao.getAccount().isEmail() ? kakao.getAccount().getEmail() : "";
-        this.password = password;
-        this.socialType = SocialType.KAKAO;
-        this.profileImageUrl = kakao.getProperties().getProfileImage();
+    public static User ofKakao(String email, String password, String accessToken, String refreshToken) {
+        return User.builder()
+            .email(email)
+            .password(password)
+            .accessToken(accessToken)
+            .refreshToken(refreshToken)
+            .socialtype(SocialType.KAKAO)
+            .build();
+    }
+
+    public static User ofApple(String email, String password, String accessToken, String refreshToken) {
+        return User.builder()
+            .email(email)
+            .password(password)
+            .accessToken(accessToken)
+            .refreshToken(refreshToken)
+            .socialtype(SocialType.APPLE)
+            .build();
     }
 
     public String getRoleKey() {
         return RoleType.ROLE_VIEW.name();
-    }
-
-    public User update(String name) {
-        this.name = name;
-
-        return this;
     }
 
     // @Builder.Default
