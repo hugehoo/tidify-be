@@ -1,4 +1,4 @@
-package tidify.tidify.common.exception;
+package tidify.tidify.exception;
 
 import lombok.Builder;
 import lombok.Getter;

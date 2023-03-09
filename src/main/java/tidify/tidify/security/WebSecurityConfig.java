@@ -1,4 +1,4 @@
-package tidify.tidify.common.security;
+package tidify.tidify.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

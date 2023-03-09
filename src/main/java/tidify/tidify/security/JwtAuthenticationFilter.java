@@ -1,4 +1,4 @@
-package tidify.tidify.common.security;
+package tidify.tidify.security;
 
 import java.io.IOException;
 
@@ -11,13 +11,11 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.filter.GenericFilterBean;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import tidify.tidify.domain.User;
-
 
 @Slf4j
 @RequiredArgsConstructor
@@ -26,7 +24,7 @@ public class JwtAuthenticationFilter extends GenericFilterBean {
     private final JwtTokenProvider jwtTokenProvider;
 
     @Override
-    @Transactional
+    // @Transactional
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
         throws IOException, ServletException {
 
@@ -34,24 +32,26 @@ public class JwtAuthenticationFilter extends GenericFilterBean {
         String refreshToken = jwtTokenProvider.resolveRefreshToken((HttpServletRequest)request);
         if (accessToken != null && jwtTokenProvider.validateToken(accessToken)) {
             setAuthentication(accessToken);
-        }
-        else if (!jwtTokenProvider.validateToken(accessToken) && refreshToken != null) {
+        } else if (!jwtTokenProvider.validateToken(accessToken) && refreshToken != null) {
             boolean validateRefreshToken = jwtTokenProvider.validateRefreshToken(refreshToken);
             boolean isRefreshToken = jwtTokenProvider.existsRefreshToken(refreshToken);
             if (validateRefreshToken && isRefreshToken) {
                 reIssueAccessToken((HttpServletResponse)response, refreshToken);
-            } else if(isRefreshToken){
-                // userName을 못 가져오구나 -> 하지만 야매로 refreshToken 으로 조회하면 되지
-                User user = jwtTokenProvider.findByRefreshToken(refreshToken);
-                // Token token = jwtTokenProvider.createToken(user.getUsername());
-                String newRefreshToken = jwtTokenProvider.createRefreshToken(user.getUsername());
-                user.setRefreshToken(newRefreshToken);
-                jwtTokenProvider.saveRefreshToken(user);
-                log.info("Re-Issued RefreshToken : {}", newRefreshToken);
+            }
+            if (!validateRefreshToken && isRefreshToken) {
+                String newRefreshToken = reIssueRefreshToken(refreshToken);
                 reIssueAccessToken((HttpServletResponse)response, newRefreshToken);
             }
         }
         chain.doFilter(request, response);
+    }
+
+    private String reIssueRefreshToken(String refreshToken) {
+        User user = jwtTokenProvider.findUserByRefreshToken(refreshToken);
+        String newRefreshToken = jwtTokenProvider.createRefreshToken(user.getUsername());
+        user.setRefreshToken(newRefreshToken);
+        jwtTokenProvider.saveRefreshToken(user);
+        return newRefreshToken;
     }
 
     private void reIssueAccessToken(HttpServletResponse response, String refreshToken) {
