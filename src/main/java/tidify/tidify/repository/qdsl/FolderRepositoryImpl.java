@@ -1,4 +1,4 @@
-package tidify.tidify.repository;
+package tidify.tidify.repository.qdsl;
 
 import java.util.List;
 
@@ -16,6 +16,7 @@ import tidify.tidify.domain.QFolder;
 import tidify.tidify.domain.User;
 import tidify.tidify.dto.FolderResponse;
 import tidify.tidify.dto.QFolderResponse;
+import tidify.tidify.repository.FolderRepositoryCustom;
 
 @RequiredArgsConstructor
 public class FolderRepositoryImpl implements FolderRepositoryCustom {
