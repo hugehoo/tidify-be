@@ -1,7 +1,5 @@
 package tidify.tidify.service;
 
-import java.util.Optional;
-
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,21 +35,19 @@ public class AccountService {
     }
 
     private void createUser(String userEmail, Token token, SocialType type) {
-        String password = passwordEncoder.encode(userEmail);
-        UserDto userDto = new UserDto(userEmail, password, token.getAccessToken(), token.getRefreshToken());
         userRepository.findUserByEmailAndDelFalse(userEmail)
             .ifPresentOrElse(
-                user -> updateTokens(token, user),
-                () -> saveUser(type, userDto)
-            );
+                existUser -> updateTokens(existUser, token),
+                () -> saveUser(type, userEmail, token));
     }
 
-    private void saveUser(SocialType type, UserDto userDto) {
-        User newUser = socialLoginFactory.getSocialType(type).apply(userDto);
-        userRepository.save(newUser);
+    private void saveUser(SocialType type, String email, Token token) {
+        UserDto userDto = UserDto.of(email, passwordEncoder.encode(email), token);
+        User user = socialLoginFactory.getSocialType(type).apply(userDto);
+        userRepository.save(user);
     }
 
-    private void updateTokens(Token token, User user) {
+    private void updateTokens(User user, Token token) {
         user.setAccessToken(token.getAccessToken());
         user.setRefreshToken(token.getRefreshToken());
     }
