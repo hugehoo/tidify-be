@@ -150,6 +150,11 @@ public class JwtTokenProvider {
     }
 
     public void setHeaderAccessToken(HttpServletResponse response, String accessToken) {
-        response.setHeader("authorization", "bearer " + accessToken);
+        // response.setHeader("authorization", "bearer " + accessToken); // 기존
+        response.setHeader("X-AUTH-TOKEN", accessToken);
+    }
+
+    public void setHeaderRefreshToken(HttpServletResponse response, String refreshToken) {
+        response.setHeader("refreshToken", refreshToken);
     }
 }

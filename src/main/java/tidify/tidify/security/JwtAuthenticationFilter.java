@@ -9,6 +9,7 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.GenericFilterBean;
@@ -23,6 +24,8 @@ public class JwtAuthenticationFilter extends GenericFilterBean {
 
     private final JwtTokenProvider jwtTokenProvider;
 
+    private final RedisTemplate<String, String> redisTemplate;
+
     @Override
     // @Transactional
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
@@ -34,17 +37,41 @@ public class JwtAuthenticationFilter extends GenericFilterBean {
             setAuthentication(accessToken);
         } else if (!jwtTokenProvider.validateToken(accessToken) && refreshToken != null) {
             boolean validateRefreshToken = jwtTokenProvider.validateRefreshToken(refreshToken);
+
+            //
+            // ValueOperations<String, String> redisOps = redisTemplate.opsForValue();
+            // if (!Objects.requireNonNull(redisOps.get(refreshToken)).isBlank()) {
+            //     System.out.println("false");
+            // }
+            //
+
+            // 이걸 기존엔 rdb 에서 조회하는데, redis 로 하자.
             boolean isRefreshToken = jwtTokenProvider.existsRefreshToken(refreshToken);
-            if (validateRefreshToken && isRefreshToken) {
-                reIssueAccessToken((HttpServletResponse)response, refreshToken);
-            }
+
+            // AT 만료 & RT 유효
+            HttpServletResponse httpServletResponse = (HttpServletResponse)response;
+            // if (validateRefreshToken && isRefreshToken) {
+            //     reIssueAccessTokenByRefreshToken(httpServletResponse, refreshToken);
+            // }
+            // AT & RT 만료
             if (!validateRefreshToken && isRefreshToken) {
-                String newRefreshToken = reIssueRefreshToken(refreshToken);
-                reIssueAccessToken((HttpServletResponse)response, newRefreshToken);
+                // String newRefreshToken = reIssueRefreshToken(refreshToken);
+                refreshToken = reIssueRefreshToken(refreshToken);
+
+                jwtTokenProvider.setHeaderRefreshToken(httpServletResponse, accessToken);
+                // reIssueAccessTokenByRefreshToken(httpServletResponse, refreshToken);
             }
+            reIssueAccessTokenByRefreshToken(httpServletResponse, refreshToken);
         }
         chain.doFilter(request, response);
     }
+
+    // private boolean validateByRedis(String accessToken, String refreshToken) {
+    //     ValueOperations<String, String> redisOps = redisTemplate.opsForValue();
+    //     String s = redisOps.get(refreshToken);
+    //     System.out.println(s);
+    //     return accessToken.equals(s);
+    // }
 
     private String reIssueRefreshToken(String refreshToken) {
         User user = jwtTokenProvider.findUserByRefreshToken(refreshToken);
@@ -54,7 +81,7 @@ public class JwtAuthenticationFilter extends GenericFilterBean {
         return newRefreshToken;
     }
 
-    private void reIssueAccessToken(HttpServletResponse response, String refreshToken) {
+    private void reIssueAccessTokenByRefreshToken(HttpServletResponse response, String refreshToken) {
         /// 리프레시 토큰으로 이메일 정보 가져오기
         String email = jwtTokenProvider.getUserPk(refreshToken, true);
 
