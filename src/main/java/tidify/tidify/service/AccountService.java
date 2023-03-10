@@ -1,5 +1,11 @@
 package tidify.tidify.service;
 
+import static tidify.tidify.common.Constants.*;
+
+import java.util.concurrent.TimeUnit;
+
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,6 +32,9 @@ public class AccountService {
     private final SocialLoginFactory socialLoginFactory;
     private final UserRepository userRepository;
 
+    private final RedisTemplate<String, String> redisTemplate;
+
+
     @Transactional
     public Token getJWTTokens(String idToken, SocialType type) {
         String email = socialLoginFactory.getEmail(type).apply(idToken);
@@ -44,10 +53,17 @@ public class AccountService {
     private void saveUser(SocialType type, String email, Token token) {
         UserDto userDto = UserDto.of(email, passwordEncoder.encode(email), token);
         User user = socialLoginFactory.getSocialType(type).apply(userDto);
+
+        ValueOperations<String, String> redisOps = redisTemplate.opsForValue();
+        // redisOps.set(token.getRefreshToken(), token.getAccessToken());
+        redisOps.set(token.getRefreshToken(), token.getAccessToken(), REFRESH_TOKEN_VALID_TIME, TimeUnit.MICROSECONDS);
         userRepository.save(user);
     }
 
     private void updateTokens(User user, Token token) {
+        ValueOperations<String, String> redisOps = redisTemplate.opsForValue();
+        redisOps.set(token.getRefreshToken(), token.getAccessToken(), REFRESH_TOKEN_VALID_TIME, TimeUnit.MILLISECONDS);
+
         user.setAccessToken(token.getAccessToken());
         user.setRefreshToken(token.getRefreshToken());
     }
