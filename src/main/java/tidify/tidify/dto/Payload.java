@@ -18,6 +18,7 @@ public class Payload {
     private String is_private_email;
     private Long auth_time;
     private boolean nonce_supported;
+    private Integer real_user_status;
 
     @Override
     public String toString() {
