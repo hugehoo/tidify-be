@@ -1,7 +1,7 @@
 package tidify.tidify.service;
 
-import java.util.Optional;
-
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,21 +28,36 @@ public class AccountService {
     private final SocialLoginFactory socialLoginFactory;
     private final UserRepository userRepository;
 
+    private final RedisTemplate<String, String> redisTemplate;
+
     @Transactional
     public Token getJWTTokens(String idToken, SocialType type) {
         String email = socialLoginFactory.getEmail(type).apply(idToken);
         Token token = jwtTokenProvider.createToken(email);
-        createUser(email, token, type);
+        saveOrUpdateUser(email, token, type);
         return token;
     }
 
-    private void createUser(String userEmail, Token token, SocialType type) {
-        String password = passwordEncoder.encode(userEmail);
-        UserDto userDto = new UserDto(userEmail, password, token.getAccessToken(), token.getRefreshToken());
+    private void saveOrUpdateUser(String userEmail, Token token, SocialType type) {
+        userRepository.findUserByEmailAndDelFalse(userEmail)
+            .ifPresentOrElse(existUser -> updateTokens(existUser, token),
+                () -> saveUser(type, userEmail, token));
+    }
+
+    private void saveUser(SocialType type, String email, Token token) {
+        UserDto userDto = UserDto.of(email, passwordEncoder.encode(email), token);
         User user = socialLoginFactory.getSocialType(type).apply(userDto);
-        Optional<User> findUser = userRepository.findUserByEmailAndDelFalse(user.getEmail());
-        if (findUser.isEmpty()) {
-            userRepository.save(user);
-        } // TODO : findUser 가 존재할 때도 refreshToken 을 갱신해야 하지 않을까? 다시 로그인 했다는 건, 두 토큰이 모두 만료됐단 뜻이니까.
+        userRepository.save(user);
+    }
+
+    private void updateTokens(User user, Token token) {
+        user.setAccessToken(token.getAccessToken());
+        user.setRefreshToken(token.getRefreshToken());
+    }
+
+    private void setTokenRedis(Token token) {
+        ValueOperations<String, String> ops = redisTemplate.opsForValue();
+        ops.set(token.getRefreshToken(), token.getAccessToken());
+        ops.getAndPersist(token.getRefreshToken());
     }
 }

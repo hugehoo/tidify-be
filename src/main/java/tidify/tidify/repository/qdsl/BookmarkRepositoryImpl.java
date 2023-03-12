@@ -1,4 +1,4 @@
-package tidify.tidify.repository;
+package tidify.tidify.repository.qdsl;
 
 import java.util.Arrays;
 import java.util.List;
@@ -18,6 +18,7 @@ import tidify.tidify.domain.QFolder;
 import tidify.tidify.domain.User;
 import tidify.tidify.dto.BookmarkResponse;
 import tidify.tidify.dto.QBookmarkResponse;
+import tidify.tidify.repository.BookmarkRepositoryCustom;
 
 @RequiredArgsConstructor
 public class BookmarkRepositoryImpl implements BookmarkRepositoryCustom {

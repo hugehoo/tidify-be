@@ -24,6 +24,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.Singular;
+import tidify.tidify.security.JwtTokenProvider;
 
 @Getter
 @Setter
@@ -138,5 +139,9 @@ public class User extends BaseEntity implements UserDetails {
     @Override
     public boolean isEnabled() {
         return true;
+    }
+
+    public void modifyRefreshToken(String newRefreshToken) {
+        this.refreshToken = newRefreshToken;
     }
 }

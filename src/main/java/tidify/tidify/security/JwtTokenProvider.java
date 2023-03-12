@@ -23,7 +23,6 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.PostConstruct;
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import java.util.Base64;
@@ -90,11 +89,6 @@ public class JwtTokenProvider {
         return Jwts.parser().setSigningKey(signingKey).parseClaimsJws(token).getBody().getSubject();
     }
 
-    // Request의 Header에서 token 값을 가져옵니다. "X-AUTH-TOKEN" : "TOKEN값'
-    public String resolveToken(HttpServletRequest request) {
-        return request.getHeader("X-AUTH-TOKEN");
-    }
-
     // 토큰의 유효성 + 만료일자 확인
     public boolean validateToken(String jwtToken) {
         try {
@@ -114,25 +108,8 @@ public class JwtTokenProvider {
         }
     }
 
-    public String resolveRefreshToken(HttpServletRequest request) {
-        if (request.getHeader("refreshToken") != null) {
-            return request.getHeader("refreshToken");
-        }
-        return null;
-    }
-
-    // RefreshToken 존재유무 확인
     public boolean existsRefreshToken(String refreshToken) {
         return userRepository.existsByRefreshToken(refreshToken);
-    }
-
-    public User findUserByRefreshToken(String refreshToken) {
-        return userRepository.findUserByRefreshToken(refreshToken);
-    }
-
-    @Transactional
-    public void saveRefreshToken(User user) {
-        userRepository.save(user);
     }
 
     public String createAccessToken(String userName) {
@@ -149,7 +126,16 @@ public class JwtTokenProvider {
             .compact();
     }
 
-    public void setHeaderAccessToken(HttpServletResponse response, String accessToken) {
-        response.setHeader("authorization", "bearer " + accessToken);
+    @Transactional
+    public String reIssueRefreshToken(String refreshToken) {
+        User user =  userRepository.findUserByRefreshToken(refreshToken);
+        String newRefreshToken = createRefreshToken(user.getUsername()); // 이름 저장 안하는데 뭘로 조회하는지 -> email 로 오버라이드
+        user.modifyRefreshToken(newRefreshToken);
+        return newRefreshToken;
+    }
+
+    public String reIssueAccessTokenByRefreshToken(HttpServletResponse response, String refreshToken) {
+        String email = getUserPk(refreshToken, true);
+        return createAccessToken(email);
     }
 }

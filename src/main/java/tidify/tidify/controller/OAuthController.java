@@ -21,7 +21,7 @@ public class OAuthController {
 
     private final AccountService userService;
 
-    @GetMapping("login/kakao") // TODO : url 수정 필요
+    @GetMapping("login")
     public Token getKakaoToken(@RequestParam(required = false) String code,
         @RequestParam(required = false) SocialType type,
         HttpServletRequest request) {
