@@ -37,3 +37,5 @@ out/
 /.idea
 src/main/resources/application.yml
 src/main/resources/application-oauth2_client_server.yml
+
+src/main/java/tidify/tidify/common/SecretConstants.java
