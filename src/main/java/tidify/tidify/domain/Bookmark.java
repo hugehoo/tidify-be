@@ -42,8 +42,8 @@ public class Bookmark extends BaseEntity {
     }
 
     public void moidfy(String url, String name, Folder folder) {
-        this.url = url != null ? url : this.url;
-        this.name = name != null ? name : this.name;
+        this.url = url;
+        this.name = name;
         this.folder = folder;
     }
 

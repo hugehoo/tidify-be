@@ -9,7 +9,6 @@ import tidify.tidify.domain.Bookmark;
 
 @Getter
 @ToString
-// @JsonInclude(JsonInclude.Include.NON_NULL)
 public class BookmarkResponse {
 
     private Long id;
@@ -49,11 +48,10 @@ public class BookmarkResponse {
         private String name;
         private Long folderId;
 
-        public BookmarkModifyResponse(
-            BookmarkRequest request) {
-            this.url = request.getUrl();
-            this.name = request.getName();
-            this.folderId = request.getFolderId();
+        public BookmarkModifyResponse(Bookmark bookmark) {
+            this.url = bookmark.getUrl();
+            this.name = bookmark.getName();
+            this.folderId = bookmark.getFolder() != null ? bookmark.getFolder().getId() : 0L;
         }
     }
 }
