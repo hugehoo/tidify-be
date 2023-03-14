@@ -136,6 +136,8 @@ public class JwtTokenProvider {
 
     public String reIssueAccessTokenByRefreshToken(HttpServletResponse response, String refreshToken) {
         String email = getUserPk(refreshToken, true);
-        return createAccessToken(email);
+        String accessToken = createAccessToken(email);
+        log.info("Re-Issued AccessToken : {}", accessToken);
+        return accessToken;
     }
 }

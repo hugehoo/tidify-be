@@ -18,7 +18,8 @@ public enum ErrorTypes {
     METHOD_NOT_ALLOWED("405", "Method Not Allowed Exception"),
 
     // Http Status 5xx (Internal)
-    INTERNAL_SERVER_ERROR("500", "Server Error");
+    INTERNAL_SERVER_ERROR("500", "Server Error"),
+    SQL_VIOLATION_EXCEPTION("520", "SQL Integrity Constraint Violation Exception");
 
     private final String code;
     private final String message;

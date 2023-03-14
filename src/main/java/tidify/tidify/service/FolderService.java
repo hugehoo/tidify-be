@@ -1,5 +1,7 @@
 package tidify.tidify.service;
 
+import java.util.Optional;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -49,5 +51,10 @@ public class FolderService {
         return folderRepository
             .findFolderByIdAndUser(id, user) // 이미 delete 된 건 못지우게 방어로직 추가
             .orElseThrow(() -> new ResourceNotFoundException(ErrorTypes.FOLDER_NOT_FOUND, id));
+    }
+
+    public FolderResponse getFolderById(User user, Long folderId) {
+        Folder folder = folderRepository.findFolderByIdAndUser(folderId, user).orElseThrow();
+        return FolderResponse.of(folder);
     }
 }

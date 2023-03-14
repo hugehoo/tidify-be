@@ -41,6 +41,16 @@ public class FolderController {
         return folderService.getFolders(user, pageable);
     }
 
+    @Operation(summary = "개별 폴더 조회", description = "유저의 개별 폴더 조회")
+    @GetMapping("/folder/{folderId}")
+    private ResponseEntity<FolderResponse> getFolders(
+        @AuthenticationPrincipal User user,
+        @PathVariable("folderId") Long folderId
+    ) {
+        FolderResponse folder = folderService.getFolderById(user, folderId);
+        return ResponseEntity.ok().body(folder);
+    }
+
     @Operation(summary="폴더 생성")
     @PostMapping
     private ResponseEntity<FolderResponse> createFolders(

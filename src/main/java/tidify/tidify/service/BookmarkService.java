@@ -50,12 +50,15 @@ public class BookmarkService {
     public BookmarkResponse.BookmarkModifyResponse modifyBookmark(Long id, User user, BookmarkRequest request) {
 
         Long userId = user.getId();
-        Folder folder = getFolder(request.getFolderId(), user);
-
         Bookmark bookmark = getBookmark(id, userId);
-        bookmark.moidfy(request.getUrl(), request.getName(), folder);
 
-        return new BookmarkResponse.BookmarkModifyResponse(request);
+        String url = request.getUrl();
+        String name = getNameByOption(request, url);
+
+        Folder folder = getFolder(request.getFolderId(), user);
+        bookmark.moidfy(url, name, folder);
+
+        return new BookmarkResponse.BookmarkModifyResponse(bookmark);
     }
 
     @Transactional
@@ -71,6 +74,10 @@ public class BookmarkService {
     }
 
     private Folder getFolder(Long folderId, User user) {
+        if (folderId == 0L) {
+            return null;
+        }
+
         return folderRepository.findFolderByIdAndUser(folderId, user)
             .orElseThrow(() -> new ResourceNotFoundException(ErrorTypes.FOLDER_NOT_FOUND, folderId));
     }
@@ -78,21 +85,24 @@ public class BookmarkService {
     private Bookmark buildBookmark(BookmarkRequest request, User user) {
 
         Long folderId = request.getFolderId();
-        Folder folder = null;
+        Folder folder = getFolder(folderId, user);
 
-        // 븅신 같은.. many to one 관계에서 부모 엔티티가 생성되지 않은 상태에서, 자식 엔티티를 저장할 때 발생하는 에러.
-        // save the transient instance before flushing
+        String url = request.getUrl();
+        String name = getNameByOption(request, url);
 
-        long NO_FOLDER_ID = 0L;
-        if (!folderId.equals(NO_FOLDER_ID)) {
-            folder = getFolder(folderId, user);
-        }
         return Bookmark.create()
-            .name(request.getName())
-            .url(request.getUrl())
+            .name(name)
+            .url(url)
             .folder(folder)
             .user(user)
             .build();
     }
 
+    private String getNameByOption(BookmarkRequest request, String url) {
+        String name = request.getName();
+        if (name == null) {
+            return url;
+        }
+        return name;
+    }
 }
