@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 import io.swagger.annotations.Api;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
+import tidify.tidify.dto.BookmarkResponse;
 import tidify.tidify.dto.FolderRequest;
 import tidify.tidify.dto.FolderResponse;
 import tidify.tidify.domain.User;
@@ -32,8 +33,8 @@ public class FolderController {
 
     private final FolderService folderService;
 
-    @Operation(summary = "폴더 조회", description = "유저의 폴더 조회")
-    @GetMapping("/folder")
+    @Operation(summary = "폴더 조회", description = "유저 폴더 조회")
+    @GetMapping
     private Page<FolderResponse> getFolders(
         @AuthenticationPrincipal User user,
         Pageable pageable
@@ -41,8 +42,8 @@ public class FolderController {
         return folderService.getFolders(user, pageable);
     }
 
-    @Operation(summary = "개별 폴더 조회", description = "유저의 개별 폴더 조회")
-    @GetMapping("/folder/{folderId}")
+    @Operation(summary = "단일 폴더 정보 조회")
+    @GetMapping("/{folderId}")
     private ResponseEntity<FolderResponse> getFolders(
         @AuthenticationPrincipal User user,
         @PathVariable("folderId") Long folderId
@@ -50,6 +51,17 @@ public class FolderController {
         FolderResponse folder = folderService.getFolderById(user, folderId);
         return ResponseEntity.ok().body(folder);
     }
+
+    @Operation(description = "폴더 내부 북마크 조회")
+    @GetMapping("/{folderId}/bookmarks")
+    private Page<BookmarkResponse> getFolderWithBookmarks(
+        @AuthenticationPrincipal User user,
+        @PathVariable("folderId") Long folderId,
+        Pageable pageable
+    ) {
+        return folderService.getFolderWithBookmarks(user, folderId, pageable);
+    }
+
 
     @Operation(summary="폴더 생성")
     @PostMapping
@@ -75,8 +87,7 @@ public class FolderController {
     @DeleteMapping("/{folderId}")
     private ResponseEntity<Void> deleteFolders(
         @AuthenticationPrincipal User user,
-        @PathVariable("folderId") Long folderId,
-        @RequestBody FolderRequest request) {
+        @PathVariable("folderId") Long folderId) {
         folderService.deleteFolder(folderId, user);
         return ResponseEntity.noContent().build();
     }

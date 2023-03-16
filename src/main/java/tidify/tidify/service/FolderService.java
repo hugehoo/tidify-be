@@ -1,7 +1,5 @@
 package tidify.tidify.service;
 
-import java.util.Optional;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -9,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 import tidify.tidify.domain.Folder;
+import tidify.tidify.dto.BookmarkResponse;
 import tidify.tidify.dto.FolderRequest;
 import tidify.tidify.dto.FolderResponse;
 import tidify.tidify.exception.ErrorTypes;
@@ -22,6 +21,17 @@ public class FolderService {
 
     private final FolderRepository folderRepository;
 
+    @Transactional(readOnly = true)
+    public FolderResponse getFolderById(User user, Long folderId) {
+        Folder folder = folderRepository.findFolderByIdAndUser(folderId, user).orElseThrow();
+        return FolderResponse.of(folder);
+    }
+
+    public Page<BookmarkResponse> getFolderWithBookmarks(User user, Long folderId, Pageable pageable) {
+        return folderRepository.findBookmarksByFolder(user, folderId, pageable);
+    }
+
+    @Transactional(readOnly = true)
     public Page<FolderResponse> getFolders(User user, Pageable pageable) {
         return folderRepository.findFoldersWithCount(user, pageable);
     }
@@ -45,16 +55,16 @@ public class FolderService {
     public void deleteFolder(Long id, User user) {
         Folder folder = getFolder(id, user);
         folder.delete();
+        updateBookmarkAsNoneFolder(user, folder);
+    }
+
+    private void updateBookmarkAsNoneFolder(User user, Folder folder) {
+        folderRepository.updateBookmarksAsNoneFolder(user.getId(), folder.getId());
     }
 
     private Folder getFolder(Long id, User user) {
         return folderRepository
             .findFolderByIdAndUser(id, user) // 이미 delete 된 건 못지우게 방어로직 추가
             .orElseThrow(() -> new ResourceNotFoundException(ErrorTypes.FOLDER_NOT_FOUND, id));
-    }
-
-    public FolderResponse getFolderById(User user, Long folderId) {
-        Folder folder = folderRepository.findFolderByIdAndUser(folderId, user).orElseThrow();
-        return FolderResponse.of(folder);
     }
 }

@@ -14,7 +14,9 @@ import lombok.RequiredArgsConstructor;
 import tidify.tidify.domain.QBookmark;
 import tidify.tidify.domain.QFolder;
 import tidify.tidify.domain.User;
+import tidify.tidify.dto.BookmarkResponse;
 import tidify.tidify.dto.FolderResponse;
+import tidify.tidify.dto.QBookmarkResponse;
 import tidify.tidify.dto.QFolderResponse;
 import tidify.tidify.repository.FolderRepositoryCustom;
 
@@ -47,4 +49,32 @@ public class FolderRepositoryImpl implements FolderRepositoryCustom {
         return PageableExecutionUtils.getPage(fetch, pageable, count::fetchOne);
     }
 
+    @Override
+    public Page<BookmarkResponse> findBookmarksByFolder(User user, Long folderId, Pageable pageable) {
+
+        BooleanExpression whereClause = qBookmark.user.eq(user)
+            .and(qBookmark.folder.id.eq(folderId))
+            .and(qBookmark.del.isFalse());
+
+        List<BookmarkResponse> fetch = query.select(new QBookmarkResponse(qBookmark, qFolder.id))
+            .from(qBookmark)
+            .where(whereClause)
+            .offset(pageable.getOffset())
+            .limit(pageable.getPageSize())
+            .fetch();
+
+        JPAQuery<Long> count = query.select(qBookmark.count())
+            .from(qBookmark)
+            .where(whereClause);
+
+        return PageableExecutionUtils.getPage(fetch, pageable, count::fetchOne);
+    }
+
+    // @Override
+    public void updateBookmarksAsNoneFolder(Long folderId) {
+        query.update(qBookmark)
+            .set(qBookmark.folder.id, 1L)
+            .where(qBookmark.folder.id.eq(folderId))
+            .execute();
+    }
 }
