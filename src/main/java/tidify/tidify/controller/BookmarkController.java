@@ -32,7 +32,7 @@ public class BookmarkController {
     private final BookmarkService bookmarkService;
 
     @GetMapping
-    @Operation(summary="북마크 조회", description="유저의 북마크를 조회")
+    @Operation(summary="북마크 조회", description="유저의 전체 북마크 조회")
     private Page<BookmarkResponse> getBookmarks(
         @AuthenticationPrincipal User user, Pageable pageable
     ) {
