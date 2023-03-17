@@ -5,6 +5,9 @@ plugins {
 
     // querydsl
     id "com.ewerk.gradle.plugins.querydsl" version "1.0.10"
+
+    // jacoco
+    id 'jacoco'
 }
 
 group = 'tidify'
@@ -39,7 +42,8 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web-services'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-security'
-    implementation 'org.springframework.boot:spring-boot-starter-oauth2-client' // facebook, naver 만 지원함 -> 내게 필요없는 라이브러리일지도.
+    implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
+    // facebook, naver 만 지원함 -> 내게 필요없는 라이브러리일지도.
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 
     compileOnly 'org.projectlombok:lombok'
@@ -101,4 +105,24 @@ compileQuerydsl {
 
 tasks.named('test') {
     useJUnitPlatform()
+}
+
+jacocoTestReport {
+    reports {
+        xml.required = false
+        csv.required = false
+        html.outputLocation = layout.buildDirectory.dir('jacocoHtml')
+    }
+}
+jacoco {
+    toolVersion = "0.8.7"
+    reportsDirectory = layout.buildDirectory.dir('customJacocoReportDir')
+}
+test {
+    // finalizedBy : 이(test) 작업에 대해 주어진 종료자 작업을 추가
+    finalizedBy jacocoTestReport // test 작업이 끝나고 jacocoTestReport를 실행
+}
+jacocoTestReport {
+    // dependsOn : 이 작업에 지정된 종속성을 추가
+    dependsOn test // jacocoTestReport 에 test라는 종속성을 추가
 }
