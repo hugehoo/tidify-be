@@ -11,10 +11,12 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Stream;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.transaction.annotation.Transactional;
 
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
@@ -23,13 +25,18 @@ import io.restassured.response.Response;
 import tidify.tidify.domain.Bookmark;
 import tidify.tidify.exception.ErrorTypes;
 import tidify.tidify.repository.BookmarkRepository;
+import tidify.tidify.repository.FolderRepository;
 
+@Transactional
 @DisplayName("폴더 도메인 인수 테스트")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 public class FolderAcceptanceTest {
 
     @Autowired
     BookmarkRepository bookmarkRepository;
+
+    @Autowired
+    FolderRepository folderRepository;
 
     final String 폴더_이름 = "뉴진스의 폴더";
     final String 수정할_폴더_이름 = "뉴진스의 Omg 폴더";
@@ -159,6 +166,12 @@ public class FolderAcceptanceTest {
         assertThat(북마크.getFolder()).isNull();
     }
 
+    @AfterEach
+    void ClearDB() {
+        folderRepository.deleteByUserId(USER_ID);
+        bookmarkRepository.deleteByUserId(USER_ID);
+    }
+
     private static ExtractableResponse<Response> 폴더_삭제_API(Long folderId) {
 
         return RestAssured.given().log().all()
@@ -270,6 +283,7 @@ public class FolderAcceptanceTest {
 
         return map;
     }
+
     private Bookmark 북마크_조회(Long 북마크_ID) {
         return bookmarkRepository.findBookmarkByIdAndDel(북마크_ID, false);
     }

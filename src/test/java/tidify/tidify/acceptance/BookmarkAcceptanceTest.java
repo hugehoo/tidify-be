@@ -12,8 +12,10 @@ import java.util.Objects;
 import java.util.Random;
 import java.util.stream.Stream;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,11 +25,20 @@ import io.restassured.http.ContentType;
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.ExtractableResponse;
 import io.restassured.response.Response;
+import io.restassured.response.ResponseBodyExtractionOptions;
+import tidify.tidify.dto.FolderResponse;
+import tidify.tidify.repository.BookmarkRepository;
+import tidify.tidify.repository.FolderRepository;
 
+@Transactional
 @DisplayName("북마크 도메인 인수 테스트")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
-@Transactional
 public class BookmarkAcceptanceTest {
+    @Autowired
+    BookmarkRepository bookmarkRepository;
+
+    @Autowired
+    FolderRepository folderRepository;
 
     final String 폴더_1_이름 = "뉴진스의 폴더";
     final String 폴더_2_이름 = "뉴진스의 폴더2";
@@ -56,6 +67,48 @@ public class BookmarkAcceptanceTest {
         List<String> 누락_데이터 = Stream.concat(이름_누락_북마크, URL_누락_북마크).toList();
 
         assertThat(누락_데이터).isEmpty();
+    }
+
+    /**
+     * given 다른 이름의 북마크 3개 저장돼 있을 때,
+     * when 특정 이름으로 검색하면
+     * then 검색어에 맞는 북마크가 검색된다.
+     */
+    @Test
+    void 북마크_검색_테스트() {
+        // given
+        Map<String, Object> 북마크_정보_1 = setUpBookmarkRequestBody("민지", URL_GOOGLE, 0L);
+        Map<String, Object> 북마크_정보_2 = setUpBookmarkRequestBody("해린", URL_GOOGLE, 0L);
+        Map<String, Object> 북마크_정보_3 = setUpBookmarkRequestBody("혜인", URL_GOOGLE, 0L);
+        북마크_생성_API(북마크_정보_1);
+        북마크_생성_API(북마크_정보_2);
+        북마크_생성_API(북마크_정보_3);
+
+        // when
+        String 검색어 = "민지";
+        List<String> 검색_결과 = 북마크_검색_API(검색어).jsonPath().getList("content.name");
+
+        // then
+        assertThat(검색_결과).contains(검색어);
+    }
+
+    private ResponseBodyExtractionOptions 북마크_검색_API(String 검색어) {
+
+        return RestAssured.given().log().all()
+            .headers(
+                "X-Auth-Token",
+                ACCESS_TOKEN,
+                "refreshToken",
+                REFRESH_TOKEN,
+                "Content-Type", ContentType.JSON,
+                "Accept", ContentType.JSON)
+            .queryParam("keyword", 검색어)
+            .when()
+            .get("/app/bookmarks/search")
+            .then()
+            .log()
+            .all()
+            .extract();
     }
 
     /**
@@ -160,10 +213,16 @@ public class BookmarkAcceptanceTest {
         Map<String, Object> 북마크_정보_수정 = setUpBookmarkRequestBody(북마크_이름_NULL, URL_NAVER, 0L);
         String 수정된_북마크_이름 = 북마크_수정_API(북마크_ID, 북마크_정보_수정)
             .jsonPath()
-            .get("수정된_북마크_이름");
+            .get("name");
 
         // then
         assertEquals(URL_NAVER, 수정된_북마크_이름);
+    }
+
+    @AfterEach
+    void ClearDB() {
+        folderRepository. deleteByUserId(USER_ID);
+        bookmarkRepository.deleteByUserId(USER_ID);
     }
 
     /**
