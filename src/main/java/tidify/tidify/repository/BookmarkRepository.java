@@ -11,5 +11,9 @@ import tidify.tidify.domain.Bookmark;
 @Repository
 public interface BookmarkRepository extends JpaRepository<Bookmark, Long>, BookmarkRepositoryCustom {
     Optional<Bookmark> findBookmarkByIdAndUserIdAndDelFalse(Long id, Long userId);
+
+    Bookmark findBookmarkByIdAndDel(Long bookmarkId, Boolean bool);
+
+
 }
 
