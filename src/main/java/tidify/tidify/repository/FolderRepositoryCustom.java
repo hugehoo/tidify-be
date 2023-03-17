@@ -4,9 +4,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import tidify.tidify.domain.User;
+import tidify.tidify.dto.BookmarkResponse;
 import tidify.tidify.dto.FolderResponse;
 
 public interface FolderRepositoryCustom {
     Page<FolderResponse> findFoldersWithCount(User user, Pageable pageable);
 
+    Page<BookmarkResponse> findBookmarksByFolder(User user, Long folderId, Pageable pageable);
 }
