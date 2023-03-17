@@ -19,4 +19,8 @@ public interface FolderRepository extends JpaRepository<Folder, Long>, FolderRep
     @Modifying
     @Query(value = "UPDATE bookmark b set b.folder_id = null where b.folder_id = :folderId and b.user_id = :userId", nativeQuery = true)
     void updateBookmarksAsNoneFolder(@Param("userId") Long userId, @Param("folderId") Long folderId);
+
+    @Modifying
+    @Query(value = "DELETE FROM folder f where f.user_id = :userId", nativeQuery = true)
+    void deleteByUserId(@Param("userId") Long userId);
 }
