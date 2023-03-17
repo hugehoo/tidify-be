@@ -38,8 +38,9 @@ public class FolderService {
 
     @Transactional
     public FolderResponse createFolder(FolderRequest request, User user) {
-        Folder folder = Folder.of(request.getFolderName(), request.getLabel(), user);
-        folderRepository.save(folder);
+        Folder folder = folderRepository.save(
+            Folder.of(request.getFolderName(), request.getLabel(), user)
+        );
         return FolderResponse.of(folder);
     }
 

@@ -19,13 +19,15 @@ public class FolderResponse {
 
     public static FolderResponse of(Folder folder) {
         return FolderResponse.builder()
+            .folderId(folder.getId())
             .folderName(folder.getName())
             .label(folder.getLabel())
             .build();
     }
 
     @Builder
-    public FolderResponse(String folderName, LabelType label) {
+    public FolderResponse(Long folderId, String folderName, LabelType label) {
+        this.folderId = folderId;
         this.folderName = folderName;
         this.label = label;
     }
