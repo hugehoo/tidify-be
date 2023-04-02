@@ -42,9 +42,6 @@ public class User extends BaseEntity implements UserDetails {
     @Column(nullable = false, unique = true, length = 100)
     private String email;
 
-    // @Column(nullable = false, length = 50)
-    // private String name;
-
     @JsonIgnore
     @Column(nullable = false, length = 150)
     private String password;
@@ -83,24 +80,18 @@ public class User extends BaseEntity implements UserDetails {
         this.socialType = socialtype;
     }
 
-    public static User ofKakao(String email, String password, String accessToken, String refreshToken) {
+    public static User ofSocialType(String email, String password, String accessToken, String refreshToken, SocialType socialType) {
         return User.builder()
             .email(email)
             .password(password)
             .accessToken(accessToken)
             .refreshToken(refreshToken)
-            .socialtype(SocialType.KAKAO)
+            .socialtype(socialType)
             .build();
     }
 
-    public static User ofApple(String email, String password, String accessToken, String refreshToken) {
-        return User.builder()
-            .email(email)
-            .password(password)
-            .accessToken(accessToken)
-            .refreshToken(refreshToken)
-            .socialtype(SocialType.APPLE)
-            .build();
+    public String getUserEmail() {
+        return email;
     }
 
     public String getRoleKey() {

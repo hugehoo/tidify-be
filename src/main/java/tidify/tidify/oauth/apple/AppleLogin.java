@@ -21,7 +21,13 @@ public class AppleLogin implements SocialLogin {
 
     @Override
     public User userTransaction(UserDto user) {
-        return User.ofApple(user.getEmail(), user.getPassword(), user.getAccessToken(), user.getRefreshToken());
+        return User.ofSocialType(
+            user.getEmail(),
+            user.getPassword(),
+            user.getAccessToken(),
+            user.getRefreshToken(),
+            SocialType.APPLE
+        );
     }
 
     @Override

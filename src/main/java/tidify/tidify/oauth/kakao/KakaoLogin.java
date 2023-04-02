@@ -25,7 +25,6 @@ public class KakaoLogin implements SocialLogin {
     @Value("${spring.security.oauth2.client.registration.kakao.client-id}")
     private String clientId;
 
-    private final KakaoTokenFeign kakaoTokenFeign;
     private final KakaoUserFeign kakaoUserFeign;
 
     @Override
@@ -35,12 +34,18 @@ public class KakaoLogin implements SocialLogin {
 
     @Override
     public User userTransaction(UserDto user) {
-        return User.ofKakao(user.getEmail(), user.getPassword(), user.getAccessToken(), user.getRefreshToken());
+        return User.ofSocialType(
+            user.getEmail(),
+            user.getPassword(),
+            user.getAccessToken(),
+            user.getRefreshToken(),
+            SocialType.KAKAO
+        );
     }
 
     @Override
-    public String emailTransaction(String code) {
-        KakaoLoginTokenInfo tokenInfo = kakaoTokenFeign.getAccessToken(grantType, clientId, redirectUri, code);
-        return kakaoUserFeign.getUserInfo(tokenInfo.getAccess_token()).getAccount().getEmail();
+    public String emailTransaction(String accessToken) {
+        String authorization = String.format("Bearer %s", accessToken);
+        return kakaoUserFeign.getUserInfo(authorization).getAccount().getEmail();
     }
 }
