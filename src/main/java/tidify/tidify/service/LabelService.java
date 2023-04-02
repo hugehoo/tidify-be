@@ -1,12 +1,13 @@
 package tidify.tidify.service;
 
-import java.util.List;
-import java.util.stream.Collectors;
+import static java.util.stream.Collectors.toList;
 
+import java.util.List;
+
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
-import tidify.tidify.domain.Label;
 import tidify.tidify.dto.LabelResponse;
 import tidify.tidify.repository.LabelRepository;
 
@@ -16,8 +17,11 @@ public class LabelService {
 
     private final LabelRepository labelRepository;
 
+    @Cacheable(value = "label")
     public List<LabelResponse> getAllLabel() {
-        List<Label> labels = labelRepository.findAll();
-        return labels.stream().map(LabelResponse::of).collect(Collectors.toList());
+        return labelRepository.findAll()
+            .stream()
+            .map(LabelResponse::of)
+            .collect(toList());
     }
 }
