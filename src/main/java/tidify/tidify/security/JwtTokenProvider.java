@@ -13,6 +13,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import tidify.tidify.domain.SocialType;
 import tidify.tidify.domain.User;
 import tidify.tidify.repository.UserRepository;
 
@@ -23,7 +24,6 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.PostConstruct;
-import javax.servlet.http.HttpServletResponse;
 
 import java.util.Base64;
 import java.util.List;
@@ -45,30 +45,28 @@ public class JwtTokenProvider {
 
     List<String> roles = List.of("User", "Admin");
 
-    // 객체 초기화, secretKey를 Base64로 인코딩한다.
     @PostConstruct
     protected void init() {
         secretKey = Base64.getEncoder().encodeToString(secretKey.getBytes());
     }
 
-    // JWT 토큰 생성
-    public Token createToken(String userName) {
-        String accessToken = createAccessToken(userName);
-        String refreshToken = createRefreshToken(userName);
+    public Token createToken(String userEmail, SocialType type) {
+        String accessToken = createAccessToken(userEmail);
+        String refreshToken = createRefreshToken(userEmail);
 
         return Token.builder()
             .accessToken(accessToken)
             .refreshToken(refreshToken)
-            .key(userName)
+            .key(userEmail)
+            .type(type)
             .build();
     }
 
-    public String createRefreshToken(String userName) {
-        Claims claims = Jwts.claims().setSubject(userName);
+    public String createRefreshToken(String userEmail) {
+        Claims claims = Jwts.claims().setSubject(userEmail);
         claims.put("roles", roles);
         Date now = new Date();
-        Date date = new Date(now.getTime());
-        log.info("refreshToken : {}", date);
+
         return Jwts.builder()
             .setClaims(claims)
             .setIssuedAt(now)
@@ -83,13 +81,11 @@ public class JwtTokenProvider {
         return new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
     }
 
-    // 토큰에서 회원 정보 추출
-    public String getUserPk(String token, boolean isRefresh) {
-        String signingKey = isRefresh ? refreshSecretKey : secretKey;
+    public String getUserPk(String token, boolean isRefreshToken) {
+        String signingKey = isRefreshToken ? refreshSecretKey : secretKey;
         return Jwts.parser().setSigningKey(signingKey).parseClaimsJws(token).getBody().getSubject();
     }
 
-    // 토큰의 유효성 + 만료일자 확인
     public boolean validateToken(String jwtToken) {
         try {
             Jws<Claims> claims = Jwts.parser().setSigningKey(secretKey).parseClaimsJws(jwtToken);
@@ -108,10 +104,6 @@ public class JwtTokenProvider {
         }
     }
 
-    public boolean existsRefreshToken(String refreshToken) {
-        return userRepository.existsByRefreshToken(refreshToken);
-    }
-
     public String createAccessToken(String userName) {
 
         Claims claims = Jwts.claims().setSubject(userName); // JWT payload 에 저장되는 정보단위
@@ -128,16 +120,17 @@ public class JwtTokenProvider {
 
     @Transactional
     public String reIssueRefreshToken(String refreshToken) {
-        User user =  userRepository.findUserByRefreshToken(refreshToken);
-        String newRefreshToken = createRefreshToken(user.getUsername()); // 이름 저장 안하는데 뭘로 조회하는지 -> email 로 오버라이드
+        // refreshToken 재발급은 로그아웃 하기로 하지 않았나?
+        // 굳이 RDB 조회할 필요 있나 -> DB User refreshToken 값 Update 해줘야함.
+        User user = userRepository.findUserByRefreshToken(refreshToken);
+        // refreshToken 으로도 userEmail 은 꺼낼 수 있다.
+        String newRefreshToken = createRefreshToken(user.getUserEmail());
         user.modifyRefreshToken(newRefreshToken);
         return newRefreshToken;
     }
 
-    public String reIssueAccessTokenByRefreshToken(HttpServletResponse response, String refreshToken) {
+    public String reIssueAccessToken(String refreshToken) {
         String email = getUserPk(refreshToken, true);
-        String accessToken = createAccessToken(email);
-        log.info("Re-Issued AccessToken : {}", accessToken);
-        return accessToken;
+        return createAccessToken(email);
     }
 }

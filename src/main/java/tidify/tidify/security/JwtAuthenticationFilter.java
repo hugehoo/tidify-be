@@ -9,14 +9,13 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.GenericFilterBean;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import tidify.tidify.redis.RedisTokenService;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -24,38 +23,42 @@ public class JwtAuthenticationFilter extends GenericFilterBean {
 
     private final JwtTokenProvider jwtTokenProvider;
 
-    private final RedisTemplate<String, String> redisTemplate;
+    private final RedisTokenService redisTokenService;
 
-    private ValueOperations<String, String> redis() {
-        return redisTemplate.opsForValue();
-    }
+    public final String X_AUTH_TOKEN = "X-AUTH-TOKEN";
+    private final String REFRESH_TOKEN = "refreshToken";
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
         throws IOException, ServletException {
 
-        String accessToken = resolveToken((HttpServletRequest)request);
+        String accessToken = resolveAccessToken((HttpServletRequest)request);
         String refreshToken = resolveRefreshToken((HttpServletRequest)request);
 
         if (accessToken != null && jwtTokenProvider.validateToken(accessToken)) {
             setAuthentication(accessToken);
         } else if (!jwtTokenProvider.validateToken(accessToken) && refreshToken != null) {
             boolean validateRefreshToken = jwtTokenProvider.validateRefreshToken(refreshToken);
-            // 이걸 기존엔 rdb 에서 조회하는데, redis 로 하자 ->  레디스가 보장을 못해줘.
-            // -> expire 되면 false 뜨기 때문에 로그아웃시켜야함?
-            // boolean isRefreshToken = isExistRedisToken(refreshToken);
-            boolean isRefreshToken = jwtTokenProvider.existsRefreshToken(refreshToken);
+            boolean isRefreshToken = redisTokenService.existsRefreshToken(refreshToken);
             HttpServletResponse httpServletResponse = (HttpServletResponse)response;
+
             // AT 만료 & RT 유효
             if (validateRefreshToken && isRefreshToken) {
-                reIssueAccessToken(refreshToken, httpServletResponse);
-            }
-            // AT & RT 만료
-            if (!validateRefreshToken && isRefreshToken) {
-                reIssueBothTokens(refreshToken, httpServletResponse);
+                String newAccessToken = reIssueAccessToken(refreshToken);
+                setHeaders(httpServletResponse, newAccessToken, refreshToken);
+                redisTokenService.saveTokenInRedis(refreshToken);
             }
 
-            // refreshToken 이 만료되면?
+            // AT & RT 만료
+            if (!validateRefreshToken && isRefreshToken) {
+                String newRefreshToken = jwtTokenProvider.reIssueRefreshToken(refreshToken);
+                String newAccessToken = jwtTokenProvider.reIssueAccessToken(newRefreshToken);
+                setHeaders(httpServletResponse, newAccessToken, newRefreshToken);
+                redisTokenService.saveTokenInRedis(newRefreshToken);
+            }
+
+            // 왜 굳이 redis 로 가서 refreshToken 으로 조회하는거지?
+            // 자바 소스에서 refreshToken 으로 userEmail 을 가져올 수 있는데?
         }
         chain.doFilter(request, response);
     }
@@ -63,31 +66,20 @@ public class JwtAuthenticationFilter extends GenericFilterBean {
     private void reIssueBothTokens(String refreshToken, HttpServletResponse httpServletResponse) {
 
         String newRefreshToken = jwtTokenProvider.reIssueRefreshToken(refreshToken);
-        String newAccessToken = jwtTokenProvider.reIssueAccessTokenByRefreshToken(httpServletResponse, newRefreshToken);
-
-        httpServletResponse.setHeader("refreshToken", newRefreshToken);
-        httpServletResponse.setHeader("X-AUTH-TOKEN", newAccessToken);
-        this.setAuthentication(newAccessToken);
+        String newAccessToken = jwtTokenProvider.reIssueAccessToken(newRefreshToken);
+        redisTokenService.saveTokenInRedis(newRefreshToken);
+        setHeaders(httpServletResponse, newAccessToken, newRefreshToken);
     }
 
-    private void reIssueAccessToken(String refreshToken, HttpServletResponse httpServletResponse) {
-        String newAccessToken = jwtTokenProvider.reIssueAccessTokenByRefreshToken(httpServletResponse, refreshToken);// setAuthenticationWithNewToken(refreshToken, httpServletResponse);
-        httpServletResponse.setHeader("X-AUTH-TOKEN", newAccessToken);
-        this.setAuthentication(newAccessToken);
+    private String reIssueAccessToken(String refreshToken) {
+        String userEmail = redisTokenService.getRedisValue(refreshToken);
+        return jwtTokenProvider.createAccessToken(userEmail);
     }
 
-    private void deleteRedisKey(String refreshToken) {
-        redis().getAndDelete(refreshToken);
-    }
-
-    private boolean isExistRedisToken(String refreshToken) {
-        
-        return redis().get(refreshToken) != null;
-    }
-
-    private void setRedisToken(String accessToken, String refreshToken) {
-
-        redis().set(refreshToken, accessToken);
+    private void setHeaders(HttpServletResponse httpServletResponse, String accessToken, String refreshToken) {
+        httpServletResponse.setHeader(REFRESH_TOKEN, refreshToken);
+        httpServletResponse.setHeader(X_AUTH_TOKEN, accessToken);
+        this.setAuthentication(accessToken);
     }
 
     public void setAuthentication(String token) {
@@ -95,14 +87,11 @@ public class JwtAuthenticationFilter extends GenericFilterBean {
         SecurityContextHolder.getContext().setAuthentication(authentication);
     }
 
-    public String resolveToken(HttpServletRequest request) {
-        return request.getHeader("X-AUTH-TOKEN");
+    public String resolveAccessToken(HttpServletRequest request) {
+        return request.getHeader(X_AUTH_TOKEN);
     }
 
     public String resolveRefreshToken(HttpServletRequest request) {
-        if (request.getHeader("refreshToken") != null) {
-            return request.getHeader("refreshToken");
-        }
-        return null;
+        return request.getHeader(REFRESH_TOKEN);
     }
 }
