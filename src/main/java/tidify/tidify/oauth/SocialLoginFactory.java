@@ -29,13 +29,11 @@ public class SocialLoginFactory {
         }
     }
 
-    public Function<UserDto, User> getSocialType(SocialType type) {
-        SocialType socialType = Objects.requireNonNullElse(type, SocialType.KAKAO);
+    public Function<UserDto, User> getSocialType(SocialType socialType) {
         return socialMap.get(socialType);
     }
 
-    public Function<String, String> getEmail(SocialType type) {
-        SocialType socialType = Objects.requireNonNullElse(type, SocialType.KAKAO);
+    public Function<String, String> getEmail(SocialType socialType) {
         return emailMap.get(socialType);
     }
 }

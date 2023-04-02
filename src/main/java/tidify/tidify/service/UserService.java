@@ -1,13 +1,13 @@
 package tidify.tidify.service;
 
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import tidify.tidify.redis.RefreshToken;
+import tidify.tidify.redis.RedisTokenRepository;
 import tidify.tidify.security.JwtTokenProvider;
 import tidify.tidify.security.Token;
 import tidify.tidify.domain.SocialType;
@@ -19,34 +19,49 @@ import tidify.tidify.dto.UserDto;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class AccountService {
+public class UserService {
 
     private final JwtTokenProvider jwtTokenProvider;
 
     private final PasswordEncoder passwordEncoder;
 
+    private final RedisTokenRepository redisTokenRepository;
+
     private final SocialLoginFactory socialLoginFactory;
+
     private final UserRepository userRepository;
 
-    private final RedisTemplate<String, String> redisTemplate;
-
+    // 여기서 transaction 전파는 어떡할 것인가?
     @Transactional
-    public Token getJWTTokens(String idToken, SocialType type) {
-        String email = socialLoginFactory.getEmail(type).apply(idToken);
-        Token token = jwtTokenProvider.createToken(email);
-        saveOrUpdateUser(email, token, type);
+    public Token getAuthenticate(String idToken, SocialType type) {
+        Token token = getToken(idToken, type);
+        saveTokenInRedis(token);
+        saveOrUpdateUser(token);
         return token;
     }
 
-    private void saveOrUpdateUser(String userEmail, Token token, SocialType type) {
-        userRepository.findUserByEmailAndDelFalse(userEmail)
-            .ifPresentOrElse(existUser -> updateTokens(existUser, token),
-                () -> saveUser(type, userEmail, token));
+    private Token getToken(String idToken, SocialType type) {
+        String email = socialLoginFactory.getEmail(type).apply(idToken);
+        return jwtTokenProvider.createToken(email, type);
     }
 
-    private void saveUser(SocialType type, String email, Token token) {
+    private void saveTokenInRedis(Token token) {
+        redisTokenRepository.save(RefreshToken.of(token.getRefreshToken(), token.getKey()));
+    }
+
+    private void saveOrUpdateUser(Token token) {
+        String userEmail = jwtTokenProvider.getUserPk(token.getAccessToken(), false);
+        userRepository.findUserByEmailAndDelFalse(userEmail)
+            .ifPresentOrElse(existUser -> updateTokens(existUser, token),
+                () -> saveUser(token));
+    }
+
+    private void saveUser(Token token) {
+        String email = token.getKey();
         UserDto userDto = UserDto.of(email, passwordEncoder.encode(email), token);
-        User user = socialLoginFactory.getSocialType(type).apply(userDto);
+        User user = socialLoginFactory.getSocialType(token.getType())
+            .apply(userDto);
+
         userRepository.save(user);
     }
 
@@ -55,9 +70,4 @@ public class AccountService {
         user.setRefreshToken(token.getRefreshToken());
     }
 
-    private void setTokenRedis(Token token) {
-        ValueOperations<String, String> ops = redisTemplate.opsForValue();
-        ops.set(token.getRefreshToken(), token.getAccessToken());
-        ops.getAndPersist(token.getRefreshToken());
-    }
 }
