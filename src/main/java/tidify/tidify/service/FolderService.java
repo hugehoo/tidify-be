@@ -1,5 +1,7 @@
 package tidify.tidify.service;
 
+import java.util.Optional;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -8,8 +10,10 @@ import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import tidify.tidify.domain.Folder;
 import tidify.tidify.dto.BookmarkResponse;
+import tidify.tidify.dto.CustomPage;
 import tidify.tidify.dto.FolderRequest;
 import tidify.tidify.dto.FolderResponse;
+import tidify.tidify.dto.ObjectResponseDto;
 import tidify.tidify.exception.ErrorTypes;
 import tidify.tidify.exception.ResourceNotFoundException;
 import tidify.tidify.repository.FolderRepository;
@@ -23,17 +27,20 @@ public class FolderService {
 
     @Transactional(readOnly = true)
     public FolderResponse getFolderById(User user, Long folderId) {
-        Folder folder = folderRepository.findFolderByIdAndUser(folderId, user).orElseThrow();
+        Folder folder = folderRepository.findFolderByIdAndUser(folderId, user)
+            .orElseThrow(() -> new ResourceNotFoundException(ErrorTypes.FOLDER_NOT_FOUND, folderId));
         return FolderResponse.of(folder);
     }
 
-    public Page<BookmarkResponse> getFolderWithBookmarks(User user, Long folderId, Pageable pageable) {
-        return folderRepository.findBookmarksByFolder(user, folderId, pageable);
+    public CustomPage getFolderWithBookmarks(User user, Long folderId, Pageable pageable) {
+        Page<BookmarkResponse> bookmarks = folderRepository.findBookmarksByFolder(user, folderId, pageable);
+        return CustomPage.of(bookmarks);
     }
 
     @Transactional(readOnly = true)
-    public Page<FolderResponse> getFolders(User user, Pageable pageable) {
-        return folderRepository.findFoldersWithCount(user, pageable);
+    public CustomPage getFolders(User user, Pageable pageable) {
+        Page<FolderResponse> folders = folderRepository.findFoldersWithCount(user, pageable);
+        return CustomPage.of(folders);
     }
 
     @Transactional

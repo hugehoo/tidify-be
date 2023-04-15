@@ -1,8 +1,5 @@
 package tidify.tidify.controller;
 
-import java.net.URI;
-
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -20,8 +17,10 @@ import io.swagger.annotations.Api;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import tidify.tidify.dto.BookmarkRequest;
-import tidify.tidify.dto.BookmarkResponse;
 import tidify.tidify.domain.User;
+import tidify.tidify.dto.ObjectResponseDto;
+import tidify.tidify.dto.PageResponseDto;
+import tidify.tidify.dto.ResponseDto;
 import tidify.tidify.service.BookmarkService;
 
 @Api(tags = "북마크")
@@ -33,41 +32,44 @@ public class BookmarkController {
 
     @GetMapping
     @Operation(summary="북마크 조회", description="유저의 전체 북마크 조회")
-    private Page<BookmarkResponse> getBookmarks(
+    private ResponseDto getBookmarks(
         @AuthenticationPrincipal User user, Pageable pageable
     ) {
-        return bookmarkService.getAllBookmarks(user, pageable);
+        return new PageResponseDto<>(bookmarkService.getAllBookmarks(user, pageable));
+    }
+
+    @GetMapping("/custom")
+    @Operation(summary="Custom Dto Test 용")
+    private ResponseDto getBookmarksCustom(@AuthenticationPrincipal User user, Pageable pageable) {
+        return new PageResponseDto<>(bookmarkService.getAllBookmarks(user, pageable));
     }
 
     @GetMapping("/search")
     @Operation(summary="북마크 검색", description="북마크를 자연어로 검색")
-    private Page<BookmarkResponse> searchBookmarks(
+    private ResponseDto searchBookmarks(
         @AuthenticationPrincipal User user,
         @RequestParam String keyword, Pageable pageable
     ) {
-
-        return bookmarkService.searchBookmarks(user, keyword, pageable);
+        return new PageResponseDto<>(bookmarkService.searchBookmarks(user, keyword, pageable));
     }
 
     @PostMapping
     @Operation(summary="북마크 생성", description="북마크를 생성")
-    private ResponseEntity<BookmarkResponse> createBookmark(
+    private ResponseDto createBookmark(
         @AuthenticationPrincipal User user,
         @RequestBody BookmarkRequest request
     ) {
-        BookmarkResponse bookmarks = bookmarkService.createBookmark(request, user);
-        return ResponseEntity.created(URI.create("/bookmark")).body(bookmarks);
+        return new ObjectResponseDto<>(bookmarkService.createBookmark(request, user));
     }
 
     @PatchMapping("/{bookmarkId}")
     @Operation(summary="북마크 수정", description="북마크 정보(이름, 라벨, URL) 수정")
-    private ResponseEntity<BookmarkResponse.BookmarkModifyResponse> modifyBookmark(
+    private ResponseDto modifyBookmark(
         @AuthenticationPrincipal User user,
         @PathVariable("bookmarkId") Long bookmarkId,
         @RequestBody BookmarkRequest request
     ) {
-        BookmarkResponse.BookmarkModifyResponse bookmarks = bookmarkService.modifyBookmark(bookmarkId, user, request);
-        return ResponseEntity.ok().body(bookmarks);
+        return new ObjectResponseDto<>(bookmarkService.modifyBookmark(bookmarkId, user, request));
     }
 
     @DeleteMapping("/{bookmarkId}")

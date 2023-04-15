@@ -11,6 +11,8 @@ import tidify.tidify.domain.Bookmark;
 import tidify.tidify.domain.Folder;
 import tidify.tidify.dto.BookmarkRequest;
 import tidify.tidify.dto.BookmarkResponse;
+import tidify.tidify.dto.CustomPage;
+import tidify.tidify.dto.PageResponseDto;
 import tidify.tidify.exception.ErrorTypes;
 import tidify.tidify.exception.ResourceNotFoundException;
 import tidify.tidify.repository.BookmarkRepository;
@@ -26,16 +28,20 @@ public class BookmarkService {
 
     @Description("folder 지정되지 않은 북마크도 모두 가져옴")
     @Transactional(readOnly = true)
-    public Page<BookmarkResponse> getAllBookmarks(User user, Pageable pageable) {
+    public CustomPage getAllBookmarks(User user, Pageable pageable) {
+        Page<BookmarkResponse> bookmarks = bookmarkRepository.findBookmarksWithFolderId(user, pageable);
+        return CustomPage.of(bookmarks);
 
-        // user 값으로만 조회하구나. 중첩으로 만들어야겠다. embedded 가 맞다 linked 도 안됨.
-        // linked 하려면 지금 구조에서 folder 를 먼저 조회하고, join 걸어서 해야하는데 비용을 생각해야함.
-        return bookmarkRepository.findBookmarksWithFolderId(user, pageable);
+        // Page<BookmarkResponse> bookmarks = bookmarkRepository.findBookmarksWithFolderId(user, pageable);
+        // new CustomPage<>(bookmarks);
+        // new PageResponseDto<BookmarkResponse>(bookmarks);
+
     }
 
     @Transactional(readOnly = true)
-    public Page<BookmarkResponse> searchBookmarks(User user, String keyword, Pageable pageable) {
-        return bookmarkRepository.searchBookmarks(user, keyword, pageable);
+    public CustomPage searchBookmarks(User user, String keyword, Pageable pageable) {
+        Page<BookmarkResponse> bookmarkResponses = bookmarkRepository.searchBookmarks(user, keyword, pageable);
+        return CustomPage.of(bookmarkResponses);
     }
 
     @Transactional
