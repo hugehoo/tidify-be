@@ -14,29 +14,35 @@ public class FolderResponse {
 
     private Long folderId;
     private String folderName;
-    private LabelType label;
+    private String color;
     private Long count;
 
     public static FolderResponse of(Folder folder) {
         return FolderResponse.builder()
             .folderId(folder.getId())
             .folderName(folder.getName())
-            .label(folder.getLabel())
+            // .label(folder.getLabel())
+            .color(folder.getLabel().getColor().toUpperCase())
             .build();
     }
 
     @Builder
-    public FolderResponse(Long folderId, String folderName, LabelType label) {
+    public FolderResponse(Long folderId, String folderName,
+        // LabelType label
+        String color
+    ) {
         this.folderId = folderId;
         this.folderName = folderName;
-        this.label = label;
+        // this.label = label;
+        this.color = color;
     }
 
     @QueryProjection
     public FolderResponse(Folder folder, Long count) {
         this.folderId = folder.getId();
         this.folderName = folder.getName();
-        this.label = folder.getLabel();
+        // this.label = folder.getLabel();
+        this.color = folder.getLabel().getColor().toUpperCase();
         this.count = count;
     }
 }

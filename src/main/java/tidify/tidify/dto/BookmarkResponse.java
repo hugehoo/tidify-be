@@ -1,5 +1,6 @@
 package tidify.tidify.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.querydsl.core.annotations.QueryProjection;
 
 import lombok.Builder;
@@ -11,6 +12,7 @@ import tidify.tidify.domain.Bookmark;
 @ToString
 public class BookmarkResponse {
 
+    @JsonProperty("bookmarkId")
     private Long id;
     private String url;
     private String name;
