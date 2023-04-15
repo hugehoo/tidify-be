@@ -28,7 +28,11 @@
   - refreshToken 재발급땐 redis 조회.-> 특정 uri 로 직접 요청. refreshToken 의 만료시간이 얼마 안남았을 때, 
   - ios 쪽에서 직접 refresh-reissue URL 호출 -> 이러면 refreshToken 탈취돼도 우리 URL 모르기에 재발급 못받는다.
   - refresh-reissue URL 호출되면, redis에서 refreshToken 조회 -> 존재하면 재발급, 
-
+- [X] 왜 Bookmark(N) 에서 Folder(1)로 단방향으로 연관관계를 맺었나?
+  - Folder 에서 Bookmark 를 참조하면, `List<Bookmark>` 를 들고 있어야 한다.
+  - 이렇게 하면 생길 수 있는 문제는, Lazy 로 List<Bookmark> 를 가져오더라도 Folder 당 가지는 Bookmark 의 개수가 많아도 페이징이 불가하다.
+  - 때문에 Bookmark 에서 Folder 를 단방향 참조하고, Folder + Bookmark 를 가져와야 한다면 조인하여 페이징을 적용할 수 있도록 한다.
+  - 그리고 쿼리도 두번으로 나눠서 날아감. `folder 우선 조회`, `bookmakr 조회시 where절에 folderID`
 
 ### label Controller
 

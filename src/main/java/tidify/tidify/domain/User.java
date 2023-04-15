@@ -80,7 +80,8 @@ public class User extends BaseEntity implements UserDetails {
         this.socialType = socialtype;
     }
 
-    public static User ofSocialType(String email, String password, String accessToken, String refreshToken, SocialType socialType) {
+    public static User ofSocialType(String email, String password, String accessToken, String refreshToken,
+        SocialType socialType) {
         return User.builder()
             .email(email)
             .password(password)

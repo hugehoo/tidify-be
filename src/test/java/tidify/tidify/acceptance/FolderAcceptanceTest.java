@@ -2,35 +2,64 @@ package tidify.tidify.acceptance;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
-import static tidify.tidify.acceptance.BookmarkAcceptanceTest.*;
+import static org.springframework.restdocs.restassured3.RestAssuredRestDocumentation.*;
+import static tidify.tidify.acceptance.TDFSteps.*;
 import static tidify.tidify.common.SecretConstants.*;
+import static tidify.tidify.utils.TestConstants.*;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.restdocs.RestDocumentationContextProvider;
+import org.springframework.restdocs.RestDocumentationExtension;
 import org.springframework.transaction.annotation.Transactional;
 
 import io.restassured.RestAssured;
-import io.restassured.http.ContentType;
+import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.response.ExtractableResponse;
 import io.restassured.response.Response;
+import io.restassured.specification.RequestSpecification;
 import tidify.tidify.domain.Bookmark;
 import tidify.tidify.exception.ErrorTypes;
 import tidify.tidify.repository.BookmarkRepository;
 import tidify.tidify.repository.FolderRepository;
 
 @Transactional
+@AutoConfigureRestDocs
 @DisplayName("폴더 도메인 인수 테스트")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
+@ExtendWith(RestDocumentationExtension.class)
 public class FolderAcceptanceTest {
+
+    protected RequestSpecification spec;
+
+    final String 폴더_이름 = "뉴진스의 폴더";
+    final String 수정할_폴더_이름 = "뉴진스의 Omg 폴더";
+    final String 북마크_이름 = "뉴진스의 북마크";
+    final String 색상 = "GREEN";
+    final String URL = "www.google.com";
+
+    @LocalServerPort
+    private int port;
+
+    @BeforeEach
+    public void setUp(RestDocumentationContextProvider restDocumentation) {
+        RestAssured.port = port;
+        this.spec = new RequestSpecBuilder()
+            .addFilter(documentationConfiguration(restDocumentation))
+            .build();
+    }
 
     @Autowired
     BookmarkRepository bookmarkRepository;
@@ -38,11 +67,6 @@ public class FolderAcceptanceTest {
     @Autowired
     FolderRepository folderRepository;
 
-    final String 폴더_이름 = "뉴진스의 폴더";
-    final String 수정할_폴더_이름 = "뉴진스의 Omg 폴더";
-    final String 북마크_이름 = "뉴진스의 북마크";
-    final String 색상 = "GREEN";
-    final String URL = "www.google.com";
 
     /**
      * given 폴더가 미리 데이터베이스에 저장돼 있을 때,
@@ -54,7 +78,7 @@ public class FolderAcceptanceTest {
         // given : set up by DB
 
         // when
-        ExtractableResponse<Response> 폴더 = 폴더_조회_API();
+        ExtractableResponse<Response> 폴더 = 폴더_조회_API(spec);
 
         var 이름_누락_폴더 = 이름_누락_폴더_조회(폴더);
         var 라벨_누락_폴더 = 라벨_누락_폴더_조회(폴더);
@@ -75,9 +99,9 @@ public class FolderAcceptanceTest {
         Map<String, Object> 폴더_정보 = 폴더_Request_Body(폴더_이름, 색상);
 
         // when
-        String 저장된_폴더명 = 폴더_생성_API(폴더_정보)
+        String 저장된_폴더명 = 폴더_생성_API(spec, 폴더_정보)
             .jsonPath()
-            .get("folderName");
+            .get(DATA_FOLDER_NAME);
 
         // then
         assertEquals(저장된_폴더명, 폴더_이름);
@@ -96,9 +120,9 @@ public class FolderAcceptanceTest {
 
         // when
         Map<String, Object> data = 폴더_Request_Body(수정할_폴더_이름, 색상);
-        String 수정된_폴더명 = 폴더_수정_API(폴더_ID, data)
+        String 수정된_폴더명 = 폴더_수정_API(spec, 폴더_ID, data)
             .jsonPath()
-            .get("folderName");
+            .get(DATA_FOLDER_NAME);
 
         // then
         assertEquals(수정된_폴더명, 수정할_폴더_이름);
@@ -118,7 +142,7 @@ public class FolderAcceptanceTest {
         Map<String, Object> data = 폴더_Request_Body(폴더_이름_누락, 색상);
 
         // when
-        String statusCode = 폴더_생성_API(data).jsonPath().get("errorCode");
+        String statusCode = 폴더_생성_API(spec, data).jsonPath().get(ERROR_CODE);
 
         // then
         assertThat(ErrorTypes.SQL_VIOLATION_EXCEPTION.getCode()).isEqualTo((statusCode));
@@ -138,7 +162,7 @@ public class FolderAcceptanceTest {
         Map<String, Object> data = 폴더_Request_Body(폴더_이름, 폴더_라벨_누락);
 
         // when
-        String statusCode = 폴더_생성_API(data).jsonPath().get("errorCode");
+        String statusCode = 폴더_생성_API(spec, data).jsonPath().get(ERROR_CODE);
 
         // then
         assertThat(ErrorTypes.SQL_VIOLATION_EXCEPTION.getCode()).isEqualTo((statusCode));
@@ -158,7 +182,7 @@ public class FolderAcceptanceTest {
         Long 북마크_ID = 북마크_생성(폴더_ID);
 
         // when
-        폴더_삭제_API(폴더_ID);
+        폴더_삭제_API(spec, 폴더_ID);
 
         // then
         Bookmark 북마크 = 북마크_조회(북마크_ID);
@@ -172,116 +196,18 @@ public class FolderAcceptanceTest {
         bookmarkRepository.deleteByUserId(USER_ID);
     }
 
-    private static ExtractableResponse<Response> 폴더_삭제_API(Long folderId) {
-
-        return RestAssured.given().log().all()
-            .headers(
-                "X-Auth-Token", ACCESS_TOKEN,
-                "refreshToken", REFRESH_TOKEN,
-                "Content-Type", ContentType.JSON,
-                "Accept", ContentType.JSON)
-            .when()
-            .delete("/app/folders/{folderId}", folderId)
-            .then()
-            .log()
-            .all()
-            .extract();
-    }
-
-    private static ExtractableResponse<Response> 폴더_수정_API(Long folderId, Map<String, Object> body) {
-
-        return RestAssured.given().log().all()
-            .headers(
-                "X-Auth-Token",
-                ACCESS_TOKEN,
-                "refreshToken",
-                REFRESH_TOKEN,
-                "Content-Type", ContentType.JSON,
-                "Accept", ContentType.JSON)
-            .body(body)
-            .when()
-            .patch("/app/folders/{folderId}", folderId)
-            .then()
-            .log()
-            .all()
-            .extract();
-    }
-
-    public static ExtractableResponse<Response> 폴더_생성_API(Map<String, Object> body) {
-
-        return RestAssured.given().log().all()
-            .headers(
-                "X-Auth-Token",
-                ACCESS_TOKEN,
-                "refreshToken",
-                REFRESH_TOKEN,
-                "Content-Type", ContentType.JSON,
-                "Accept", ContentType.JSON)
-            .body(body)
-            .when()
-            .post("/app/folders")
-            .then()
-            .log()
-            .all()
-            .extract();
-    }
-
-    public static ExtractableResponse<Response> 단일_폴더_조회_API(Long folderId) {
-
-        return RestAssured.given().log().all()
-            .headers(
-                "X-Auth-Token",
-                ACCESS_TOKEN,
-                "refreshToken",
-                REFRESH_TOKEN,
-                "Content-Type", ContentType.JSON,
-                "Accept", ContentType.JSON)
-            .when()
-            .get("/app/folders/{folderId}/bookmarks", folderId)
-            .then()
-            .log()
-            .all()
-            .extract();
-    }
-
-    private static ExtractableResponse<Response> 폴더_조회_API() {
-        return RestAssured.given().log().all()
-            .headers(
-                "X-Auth-Token",
-                ACCESS_TOKEN,
-                "refreshToken",
-                REFRESH_TOKEN,
-                "Content-Type", ContentType.JSON,
-                "Accept", ContentType.JSON)
-            .when()
-            .get("/app/folders")
-            .then()
-            .log()
-            .all()
-            .extract();
-    }
-
-    private static Stream<Object> 라벨_누락_폴더_조회(ExtractableResponse<Response> response) {
+    private Stream<Object> 라벨_누락_폴더_조회(ExtractableResponse<Response> response) {
         return response.jsonPath()
-            .getList("content.label.color")
+            .getList(DATA_CONTENT_COLOR)
             .stream()
             .filter(Objects::isNull);
     }
 
-    private static Stream<Object> 이름_누락_폴더_조회(ExtractableResponse<Response> response) {
+    private Stream<Object> 이름_누락_폴더_조회(ExtractableResponse<Response> response) {
         return response.jsonPath()
-            .getList("content.folderName")
+            .getList(DATA_CONTENT_FOLDER_NAME)
             .stream()
             .filter(Objects::isNull);
-    }
-
-    static Map<String, Object> 폴더_Request_Body(String folderName, String color) {
-
-        Map<String, Object> map = new HashMap<>();
-        map.put("folderName", folderName);
-        map.put("label", color);
-
-        return map;
     }
 
     private Bookmark 북마크_조회(Long 북마크_ID) {
@@ -290,17 +216,17 @@ public class FolderAcceptanceTest {
 
     private Long 북마크_생성(Long 폴더_ID) {
 
-        return 북마크_생성_API(setUpBookmarkRequestBody(북마크_이름, URL, 폴더_ID))
+        return 북마크_생성_API(spec, 북마크_Request_Body(북마크_이름, URL, 폴더_ID))
             .jsonPath()
-            .<Integer>get("id")
+            .<Integer>get(DATA_BOOKMARK_ID)
             .longValue();
     }
 
     private Long 폴더_생성(String 폴더_이름, String 색상) {
 
-        return 폴더_생성_API(폴더_Request_Body(폴더_이름, 색상))
+        return 폴더_생성_API(spec, 폴더_Request_Body(폴더_이름, 색상))
             .jsonPath()
-            .<Integer>get("folderId")
+            .<Integer>get(DATA_FOLDER_ID)
             .longValue();
     }
 }

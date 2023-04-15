@@ -2,10 +2,11 @@ package tidify.tidify.acceptance;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.*;
-import static tidify.tidify.acceptance.FolderAcceptanceTest.*;
+import static org.springframework.restdocs.restassured3.RestAssuredRestDocumentation.*;
+import static tidify.tidify.acceptance.TDFSteps.*;
 import static tidify.tidify.common.SecretConstants.*;
+import static tidify.tidify.utils.TestConstants.*;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -13,32 +14,34 @@ import java.util.Random;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.HttpStatus;
+import org.springframework.restdocs.RestDocumentationContextProvider;
+import org.springframework.restdocs.RestDocumentationExtension;
 import org.springframework.transaction.annotation.Transactional;
 
 import io.restassured.RestAssured;
-import io.restassured.http.ContentType;
+import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.ExtractableResponse;
 import io.restassured.response.Response;
-import io.restassured.response.ResponseBodyExtractionOptions;
-import tidify.tidify.dto.FolderResponse;
+import io.restassured.specification.RequestSpecification;
 import tidify.tidify.repository.BookmarkRepository;
 import tidify.tidify.repository.FolderRepository;
 
 @Transactional
+@AutoConfigureRestDocs
 @DisplayName("북마크 도메인 인수 테스트")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
+@ExtendWith(RestDocumentationExtension.class)
 public class BookmarkAcceptanceTest {
-    @Autowired
-    BookmarkRepository bookmarkRepository;
-
-    @Autowired
-    FolderRepository folderRepository;
 
     final String 폴더_1_이름 = "뉴진스의 폴더";
     final String 폴더_2_이름 = "뉴진스의 폴더2";
@@ -46,8 +49,27 @@ public class BookmarkAcceptanceTest {
     final String 북마크_이름 = "뉴진스의 북마크";
     final String URL_GOOGLE = "www.google.com";
     final String URL_NAVER = "www.naver.com";
-
     final String 수정된_북마크_이름 = "뉴진스의 수정된 북마크";
+
+    protected RequestSpecification spec;
+
+    @Autowired
+    BookmarkRepository bookmarkRepository;
+
+    @Autowired
+    FolderRepository folderRepository;
+
+
+    @LocalServerPort
+    private int port;
+
+    @BeforeEach
+    public void setUp(RestDocumentationContextProvider restDocumentation) {
+        RestAssured.port = port;
+        spec = new RequestSpecBuilder()
+            .addFilter(documentationConfiguration(restDocumentation))
+            .build();
+    }
 
     /**
      * given 데이터베이스에 북마크가 저장돼 있을 때,
@@ -59,7 +81,7 @@ public class BookmarkAcceptanceTest {
         // given : set up by DB
 
         // when
-        JsonPath 북마크 = 북마크_조회().jsonPath();
+        JsonPath 북마크 = 북마크_조회(spec).jsonPath();
 
         // then
         var 이름_누락_북마크 = 이름_누락_북마크_조회(북마크);
@@ -77,38 +99,20 @@ public class BookmarkAcceptanceTest {
     @Test
     void 북마크_검색_테스트() {
         // given
-        Map<String, Object> 북마크_정보_1 = setUpBookmarkRequestBody("민지", URL_GOOGLE, 0L);
-        Map<String, Object> 북마크_정보_2 = setUpBookmarkRequestBody("해린", URL_GOOGLE, 0L);
-        Map<String, Object> 북마크_정보_3 = setUpBookmarkRequestBody("혜인", URL_GOOGLE, 0L);
-        북마크_생성_API(북마크_정보_1);
-        북마크_생성_API(북마크_정보_2);
-        북마크_생성_API(북마크_정보_3);
+        Map<String, Object> 북마크_정보_1 = 북마크_Request_Body("민지", URL_GOOGLE, 0L);
+        Map<String, Object> 북마크_정보_2 = 북마크_Request_Body("해린", URL_GOOGLE, 0L);
+        Map<String, Object> 북마크_정보_3 = 북마크_Request_Body("혜인", URL_GOOGLE, 0L);
+        북마크_생성_API(spec, 북마크_정보_1);
+        북마크_생성_API(spec, 북마크_정보_2);
+        북마크_생성_API(spec, 북마크_정보_3);
 
         // when
         String 검색어 = "민지";
-        List<String> 검색_결과 = 북마크_검색_API(검색어).jsonPath().getList("content.name");
+        List<String> 검색_결과 = 북마크_검색_API(검색어).jsonPath()
+            .getList(DATA_CONTENT_NAME);
 
         // then
         assertThat(검색_결과).contains(검색어);
-    }
-
-    private ResponseBodyExtractionOptions 북마크_검색_API(String 검색어) {
-
-        return RestAssured.given().log().all()
-            .headers(
-                "X-Auth-Token",
-                ACCESS_TOKEN,
-                "refreshToken",
-                REFRESH_TOKEN,
-                "Content-Type", ContentType.JSON,
-                "Accept", ContentType.JSON)
-            .queryParam("keyword", 검색어)
-            .when()
-            .get("/app/bookmarks/search")
-            .then()
-            .log()
-            .all()
-            .extract();
     }
 
     /**
@@ -119,14 +123,14 @@ public class BookmarkAcceptanceTest {
     @Test
     void 북마크_생성_테스트() {
         // given
-        Map<String, Object> 북마크_정보 = setUpBookmarkRequestBody(북마크_이름, URL_GOOGLE, 0L);
+        Map<String, Object> 북마크_정보 = 북마크_Request_Body(북마크_이름, URL_GOOGLE, 0L);
 
         // when
-        ExtractableResponse<Response> 북마크 = 북마크_생성_API(북마크_정보);
+        ExtractableResponse<Response> 북마크 = 북마크_생성_API(spec, 북마크_정보);
 
         // then
-        String url = 북마크.jsonPath().get("url");
-        String name = 북마크.jsonPath().get("name");
+        String url = 북마크.jsonPath().get(DATA_URL);
+        String name = 북마크.jsonPath().get(DATA_NAME);
 
         assertEquals(URL_GOOGLE, url);
         assertEquals(북마크_이름, name);
@@ -141,10 +145,10 @@ public class BookmarkAcceptanceTest {
     void 북마크_생성_이름_누락_테스트() {
         // given
         String 이름_누락 = null;
-        Map<String, Object> 북마크_정보 = setUpBookmarkRequestBody(이름_누락, URL_GOOGLE, 0L);
+        Map<String, Object> 북마크_정보 = 북마크_Request_Body(이름_누락, URL_GOOGLE, 0L);
 
         // when
-        ExtractableResponse<Response> 북마크 = 북마크_생성_API(북마크_정보);
+        ExtractableResponse<Response> 북마크 = 북마크_생성_API(spec, 북마크_정보);
 
         // then
         String url = 북마크.jsonPath().get("url");
@@ -164,10 +168,10 @@ public class BookmarkAcceptanceTest {
         Long 북마크_ID = 북마크_생성(0L);
 
         // when
-        Map<String, Object> 북마크_정보_수정 = setUpBookmarkRequestBody(수정된_북마크_이름, URL_GOOGLE, 0L);
-        String name = 북마크_수정_API(북마크_ID, 북마크_정보_수정)
+        Map<String, Object> 북마크_정보_수정 = 북마크_Request_Body(수정된_북마크_이름, URL_GOOGLE, 0L);
+        String name = 북마크_수정_API(spec, 북마크_ID, 북마크_정보_수정)
             .jsonPath()
-            .get("name");
+            .get(DATA_NAME);
 
         // then
         assertEquals(수정된_북마크_이름, name);
@@ -184,7 +188,7 @@ public class BookmarkAcceptanceTest {
         // given
         Long 폴더_1_ID = 폴더_생성(폴더_1_이름, 색상);
         Long 폴더_2_ID = 폴더_생성(폴더_2_이름, 색상);
-        Long 북마크_ID = 북마크_생성(폴더_1_ID.longValue());
+        Long 북마크_ID = 북마크_생성(폴더_1_ID);
 
         // when
         북마크__수정(폴더_2_ID, 북마크_ID);
@@ -210,10 +214,10 @@ public class BookmarkAcceptanceTest {
 
         // when
         String 북마크_이름_NULL = null;
-        Map<String, Object> 북마크_정보_수정 = setUpBookmarkRequestBody(북마크_이름_NULL, URL_NAVER, 0L);
-        String 수정된_북마크_이름 = 북마크_수정_API(북마크_ID, 북마크_정보_수정)
+        Map<String, Object> 북마크_정보_수정 = 북마크_Request_Body(북마크_이름_NULL, URL_NAVER, 0L);
+        String 수정된_북마크_이름 = 북마크_수정_API(spec, 북마크_ID, 북마크_정보_수정)
             .jsonPath()
-            .get("name");
+            .get(DATA_NAME);
 
         // then
         assertEquals(URL_NAVER, 수정된_북마크_이름);
@@ -221,7 +225,7 @@ public class BookmarkAcceptanceTest {
 
     @AfterEach
     void ClearDB() {
-        folderRepository. deleteByUserId(USER_ID);
+        folderRepository.deleteByUserId(USER_ID);
         bookmarkRepository.deleteByUserId(USER_ID);
     }
 
@@ -233,120 +237,51 @@ public class BookmarkAcceptanceTest {
     @Test
     void 북마크_삭제_테스트() {
         // given
-        List<Integer> 북마크_ID_목록 = 북마크_조회().jsonPath().getList("content.id");
+        List<Integer> 북마크_ID_목록 = 북마크_조회(spec)
+            .jsonPath()
+            .getList(DATA_CONTENT_BOOKMARK_ID);
         int 삭제대상_ID = ID_랜덤_선택(북마크_ID_목록);
 
         // when
-        ExtractableResponse<Response> response = 북마크_삭제_API(삭제대상_ID);
+        ExtractableResponse<Response> response = 북마크_삭제_API(spec, 삭제대상_ID);
 
         // then
         int statusCode = response.statusCode();
         assertThat(HttpStatus.NO_CONTENT.value()).isEqualTo(statusCode);
     }
 
-    private static ExtractableResponse<Response> 북마크_삭제_API(long bookmarkId) {
-        return RestAssured.given().log().all()
-            .headers(
-                "X-Auth-Token",
-                ACCESS_TOKEN,
-                "refreshToken",
-                REFRESH_TOKEN,
-                "Content-Type", ContentType.JSON,
-                "Accept", ContentType.JSON)
-            .when()
-            .delete("/app/bookmarks/{bookmarkId}", bookmarkId)
-            .then().log().all().extract();
+    private Stream<String> URL_누락_북마크_조회(JsonPath jsonPath) {
+        return jsonPath.<String>getList(DATA_CONTENT_URL).stream().filter(Objects::isNull);
     }
 
-    private static ExtractableResponse<Response> 북마크_수정_API(Long bookmarkId, Map<String, Object> body) {
-
-        return RestAssured.given().log().all()
-            .headers(
-                "X-Auth-Token",
-                ACCESS_TOKEN,
-                "refreshToken",
-                REFRESH_TOKEN,
-                "Content-Type", ContentType.JSON,
-                "Accept", ContentType.JSON)
-            .body(body)
-            .when().patch("/app/bookmarks/{bookmarkId}", bookmarkId)
-            .then().log().all().extract();
+    private Stream<String> 이름_누락_북마크_조회(JsonPath jsonPath) {
+        return jsonPath.<String>getList(DATA_CONTENT_NAME).stream().filter(Objects::isNull);
     }
 
-    public static ExtractableResponse<Response> 북마크_생성_API(Map<String, Object> body) {
-
-        return RestAssured.given().log().all()
-            .headers(
-                "X-Auth-Token",
-                ACCESS_TOKEN,
-                "refreshToken",
-                REFRESH_TOKEN,
-                "Content-Type", ContentType.JSON,
-                "Accept", ContentType.JSON)
-            .body(body)
-            .when().post("/app/bookmarks/")
-            .then().log().all().extract();
-    }
-
-    public static ExtractableResponse<Response> 북마크_조회() {
-        return RestAssured.given().log().all()
-            .headers(
-                "X-Auth-Token",
-                ACCESS_TOKEN,
-                "refreshToken",
-                REFRESH_TOKEN,
-                "Content-Type", ContentType.JSON,
-                "Accept", ContentType.JSON)
-            .when()
-            .get("/app/bookmarks")
-            .then()
-            .log()
-            .all()
-            .extract();
-    }
-
-    private static Stream<String> URL_누락_북마크_조회(JsonPath jsonPath) {
-        return jsonPath.<String>getList("content.url").stream().filter(Objects::isNull);
-    }
-
-    private static Stream<String> 이름_누락_북마크_조회(JsonPath jsonPath) {
-        return jsonPath.<String>getList("content.name").stream().filter(Objects::isNull);
-    }
-
-    public static Map<String, Object> setUpBookmarkRequestBody(String name, String url, Long folderId) {
-
-        Map<String, Object> map = new HashMap<>();
-        map.put("name", name);
-        map.put("url", url);
-        map.put("folderId", folderId);
-
-        return map;
-    }
-
-    private static int ID_랜덤_선택(List<Integer> 북마크_ID_목록) {
+    private int ID_랜덤_선택(List<Integer> 북마크_ID_목록) {
         int 랜덤_ID = new Random().nextInt(북마크_ID_목록.size());
         return 북마크_ID_목록.get(랜덤_ID);
     }
 
     private Long 북마크_생성(long 폴더_1_Id) {
-        Map<String, Object> bookmarkRequestBody = setUpBookmarkRequestBody(북마크_이름, URL_GOOGLE, 폴더_1_Id);
+        Map<String, Object> bookmarkRequestBody = 북마크_Request_Body(북마크_이름, URL_GOOGLE, 폴더_1_Id);
 
-        return 북마크_생성_API(bookmarkRequestBody)
+        return 북마크_생성_API(spec, bookmarkRequestBody)
             .jsonPath()
-            .<Integer>get("id").longValue();
+            .<Integer>get("data.bookmarkId").longValue();
     }
 
     private Long 폴더_생성(String 폴더_이름, String 색상) {
         Map<String, Object> data = 폴더_Request_Body(폴더_이름, 색상);
-        return 폴더_생성_API(data).jsonPath().<Integer>get("folderId").longValue();
+        return 폴더_생성_API(spec, data).jsonPath().<Integer>get(DATA_FOLDER_ID).longValue();
     }
 
-    private static List<Integer> 폴더_조회(Long 폴더_1_ID) {
-        return 단일_폴더_조회_API(폴더_1_ID).jsonPath().getList("content.id");
+    private List<Integer> 폴더_조회(Long 폴더_ID) {
+        return 단일_폴더_조회_API(spec, 폴더_ID).jsonPath().getList(DATA_CONTENT_BOOKMARK_ID);
     }
 
     private void 북마크__수정(Long 폴더_2_ID, Long 북마크_ID) {
-        북마크_수정_API(북마크_ID, setUpBookmarkRequestBody(북마크_이름, URL_GOOGLE, 폴더_2_ID));
+        북마크_수정_API(spec, 북마크_ID, 북마크_Request_Body(북마크_이름, URL_GOOGLE, 폴더_2_ID));
     }
 
 }

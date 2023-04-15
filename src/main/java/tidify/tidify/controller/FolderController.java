@@ -1,6 +1,5 @@
 package tidify.tidify.controller;
 
-
 import java.net.URI;
 
 import org.springframework.data.domain.Page;
@@ -20,9 +19,13 @@ import io.swagger.annotations.Api;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import tidify.tidify.dto.BookmarkResponse;
+import tidify.tidify.dto.CustomPage;
 import tidify.tidify.dto.FolderRequest;
 import tidify.tidify.dto.FolderResponse;
 import tidify.tidify.domain.User;
+import tidify.tidify.dto.ObjectResponseDto;
+import tidify.tidify.dto.PageResponseDto;
+import tidify.tidify.dto.ResponseDto;
 import tidify.tidify.service.FolderService;
 
 @Api(tags = "폴더")
@@ -35,55 +38,55 @@ public class FolderController {
 
     @Operation(summary = "폴더 조회", description = "유저 폴더 조회")
     @GetMapping
-    private Page<FolderResponse> getFolders(
+    private ResponseDto getFolders(
         @AuthenticationPrincipal User user,
         Pageable pageable
     ) {
-        return folderService.getFolders(user, pageable);
+        CustomPage folders = folderService.getFolders(user, pageable);
+        return new PageResponseDto<>(folders);
     }
 
     @Operation(summary = "단일 폴더 정보 조회")
     @GetMapping("/{folderId}")
-    private ResponseEntity<FolderResponse> getFolders(
+    private ResponseDto getFolders(
         @AuthenticationPrincipal User user,
         @PathVariable("folderId") Long folderId
     ) {
         FolderResponse folder = folderService.getFolderById(user, folderId);
-        return ResponseEntity.ok().body(folder);
+        return new ObjectResponseDto<>(folder);
     }
 
     @Operation(description = "폴더 내부 북마크 조회")
     @GetMapping("/{folderId}/bookmarks")
-    private Page<BookmarkResponse> getFolderWithBookmarks(
+    private ResponseDto getFolderWithBookmarks(
         @AuthenticationPrincipal User user,
         @PathVariable("folderId") Long folderId,
         Pageable pageable
     ) {
-        return folderService.getFolderWithBookmarks(user, folderId, pageable);
+        CustomPage folderWithBookmarks = folderService.getFolderWithBookmarks(user, folderId,
+            pageable);
+        return new PageResponseDto<>(folderWithBookmarks);
     }
 
-
-    @Operation(summary="폴더 생성")
+    @Operation(summary = "폴더 생성")
     @PostMapping
-    private ResponseEntity<FolderResponse> createFolders(
+    private ResponseDto createFolders(
         @AuthenticationPrincipal User user, @RequestBody FolderRequest request) {
         FolderResponse response = folderService.createFolder(request, user);
-        return ResponseEntity.created(URI.create("/folder")).body(response);
+        return new ObjectResponseDto<>(response);
     }
 
-
-    @Operation(summary="폴더 수정", description="폴더 정보(이름, 라벨) 수정")
+    @Operation(summary = "폴더 수정", description = "폴더 정보(이름, 라벨) 수정")
     @PatchMapping("/{folderId}")
-    private ResponseEntity<FolderResponse> modifyFolders(
+    private ResponseDto modifyFolders(
         @AuthenticationPrincipal User user,
         @PathVariable("folderId") Long folderId,
         @RequestBody FolderRequest request) {
         FolderResponse response = folderService.modifyFolder(folderId, request, user);
-        return ResponseEntity.ok().body(response);
+        return new ObjectResponseDto<>(response);
     }
 
-
-    @Operation(summary="폴더 삭제")
+    @Operation(summary = "폴더 삭제")
     @DeleteMapping("/{folderId}")
     private ResponseEntity<Void> deleteFolders(
         @AuthenticationPrincipal User user,

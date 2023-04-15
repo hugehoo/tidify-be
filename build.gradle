@@ -8,6 +8,10 @@ plugins {
 
     // jacoco
     id 'jacoco'
+
+    // rest docs
+    id "org.asciidoctor.jvm.convert" version "3.3.2"
+
 }
 
 group = 'tidify'
@@ -15,6 +19,7 @@ version = '0.0.1-SNAPSHOT'
 sourceCompatibility = '17'
 
 configurations {
+    asciidoctorExtensions
     compileOnly {
         extendsFrom annotationProcessor
     }
@@ -28,6 +33,7 @@ apply plugin: "io.spring.dependency-management"
 ext {
     springCloudVersion = '2021.0.3'
     queryDslVersion = "5.0.0"
+    snippetsDir = file('build/generated-snippets')
 }
 
 dependencyManagement {
@@ -87,9 +93,14 @@ dependencies {
     // redis
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
     implementation 'org.springframework.boot:spring-boot-starter-cache'
+
+    asciidoctorExtensions 'org.springframework.restdocs:spring-restdocs-asciidoctor'
+
+    testImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc'
+    testImplementation 'org.springframework.restdocs:spring-restdocs-restassured:2.0.5.RELEASE'
 }
 
-def querydslDir = "$buildDir/generated/querydsl"
+def querydslDir = "build/generated/querydsl"
 querydsl {
     jpa = true
     querydslSourcesDir = querydslDir
@@ -104,10 +115,6 @@ compileQuerydsl {
     options.annotationProcessorPath = configurations.querydsl
 }
 
-tasks.named('test') {
-    useJUnitPlatform()
-}
-
 jacocoTestReport {
     reports {
         xml.required = false
@@ -119,11 +126,88 @@ jacoco {
     toolVersion = "0.8.7"
     reportsDirectory = layout.buildDirectory.dir('customJacocoReportDir')
 }
+
+tasks.named('test') {
+    useJUnitPlatform()
+}
+
 test {
-    // finalizedBy : 이(test) 작업에 대해 주어진 종료자 작업을 추가
-    finalizedBy jacocoTestReport // test 작업이 끝나고 jacocoTestReport를 실행
+    outputs.dir snippetsDir
+    useJUnitPlatform() //
+//    finalizedBy jacocoTestReport
 }
 jacocoTestReport {
     // dependsOn : 이 작업에 지정된 종속성을 추가
     dependsOn test // jacocoTestReport 에 test라는 종속성을 추가
+}
+
+
+//asciidoctor { // asciidoctor 작업 구성
+//    dependsOn test // test 작업 이후에 작동하도록 하는 설정
+//    configurations 'asciidoctorExtensions' // 위에서 작성한 configuration 적용
+//    inputs.dir snippetsDir // snippetsDir 를 입력으로 구성
+//
+//    // source가 없으면 .adoc파일을 전부 html로 만들어버림
+//    // source 지정시 특정 adoc만 HTML로 만든다.
+//    sources{
+//        include("**/index.adoc","**/common/*.adoc")
+//    }
+//
+//    // 특정 .adoc에 다른 adoc 파일을 가져와서(include) 사용하고 싶을 경우 경로를 baseDir로 맞춰주는 설정입니다.
+//    // 개별 adoc으로 운영한다면 필요 없는 옵션입니다.
+//    baseDirFollowsSourceFile()
+//}
+//
+//// static/docs 폴더 비우기
+//asciidoctor.doFirst {
+//    delete file('src/main/resources/static/docs')
+//}
+//
+//// asccidoctor 작업 이후 생성된 HTML 파일을 static/docs 로 copy
+//task copyDocument(type: Copy) {
+//    dependsOn asciidoctor
+//    from file("build/docs/asciidoc")
+//    into file("src/main/resources/static/docs")
+//}
+//
+//// build 의 의존작업 명시
+//build {
+//    dependsOn copyDocument
+//}
+//
+//// 참고사항 //
+//// 공식 문서에서는 위의 ascidoctor.doFirst부터 아래 내용은 없고 이와 같은 내용만 있습니다.
+//// 이렇게 하면 jar로 만들어 질때 옮겨지는 것으로 IDE로 돌릴 때는 build 폴더에서만 확인이 가능합니다.
+//// 위 방법을 사용하면 IDE에서도 static으로 옮겨진 것을 확인할 수 있습니다.
+//// 위에 방법을 사용하든 아래 방법을 사용하든 편한 선택지를 사용하시면 됩니다.
+//bootJar {
+//    dependsOn copyDocument
+//    from ("${asciidoctor.outputDir}/html5") {
+//        into 'static/docs'
+//    }
+//}
+
+
+asciidoctor.doFirst {
+    delete file('src/main/resources/static/docs')
+}
+
+asciidoctor {
+    inputs.dir snippetsDir
+    configurations 'asciidoctorExtensions'
+    dependsOn test
+}
+
+task copyDocument(type: Copy) {
+    dependsOn asciidoctor
+
+    from file("build/generated-snippets")
+    into file("src/main/resources/static/docs")
+}
+
+bootJar {
+    dependsOn copyDocument
+    from("${asciidoctor.outputDir}/html5") {
+        into 'static/docs'
+    }
 }
