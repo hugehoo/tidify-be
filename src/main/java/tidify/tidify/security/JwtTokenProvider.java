@@ -2,9 +2,17 @@ package tidify.tidify.security;
 
 import static tidify.tidify.common.Constants.*;
 
+import java.util.Base64;
 import java.util.Date;
+import java.util.List;
+
+import javax.annotation.PostConstruct;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Component;
 
 import io.jsonwebtoken.Claims;
@@ -14,19 +22,6 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import tidify.tidify.domain.SocialType;
-import tidify.tidify.domain.User;
-import tidify.tidify.repository.UserRepository;
-
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.transaction.annotation.Transactional;
-
-import javax.annotation.PostConstruct;
-
-import java.util.Base64;
-import java.util.List;
 
 @RequiredArgsConstructor
 @Component
@@ -34,8 +29,6 @@ import java.util.List;
 public class JwtTokenProvider {
 
     private final UserDetailsService userDetailsService;
-
-    private final UserRepository userRepository;
 
     @Value("${jwt.secret}")
     private String secretKey;
@@ -118,19 +111,4 @@ public class JwtTokenProvider {
             .compact();
     }
 
-    @Transactional
-    public String reIssueRefreshToken(String refreshToken) {
-        // refreshToken 재발급은 로그아웃 하기로 하지 않았나?
-        // 굳이 RDB 조회할 필요 있나 -> DB User refreshToken 값 Update 해줘야함.
-        User user = userRepository.findUserByRefreshToken(refreshToken);
-        // refreshToken 으로도 userEmail 은 꺼낼 수 있다.
-        String newRefreshToken = createRefreshToken(user.getUserEmail());
-        user.modifyRefreshToken(newRefreshToken);
-        return newRefreshToken;
-    }
-
-    public String reIssueAccessToken(String refreshToken) {
-        String email = getUserPk(refreshToken, true);
-        return createAccessToken(email);
-    }
 }
