@@ -182,12 +182,16 @@ public class FolderAcceptanceTest {
         Long 북마크_ID = 북마크_생성(폴더_ID);
 
         // when
-        폴더_삭제_API(spec, 폴더_ID);
+        ExtractableResponse<Response> response = 폴더_삭제_API(spec, 폴더_ID);
+        String resultCode = response.jsonPath().get("code");
 
         // then
         Bookmark 북마크 = 북마크_조회(북마크_ID);
-        assertThat(북마크.getId()).isEqualTo(북마크_ID);
-        assertThat(북마크.getFolder()).isNull();
+        assertAll(
+            () -> assertThat(북마크.getId()).isEqualTo(북마크_ID),
+            () -> assertThat(북마크.getFolder()).isNull(),
+            () -> assertThat(resultCode).isEqualTo("200")
+        );
     }
 
     @AfterEach

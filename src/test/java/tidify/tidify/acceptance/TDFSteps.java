@@ -185,9 +185,10 @@ public class TDFSteps {
             .extract();
     }
 
-    static ResponseBodyExtractionOptions 북마크_검색_API(String 검색어) {
+    static ResponseBodyExtractionOptions 북마크_검색_API(RequestSpecification spec, String 검색어) {
 
-        return RestAssured.given().log().all()
+        return RestAssured.given(spec).log().all()
+            .filter(restDocsFilter("bookmark-search"))
             .headers(
                 X_AUTH_TOKEN,
                 ACCESS_TOKEN,

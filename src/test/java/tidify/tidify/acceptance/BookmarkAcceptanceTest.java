@@ -22,7 +22,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
-import org.springframework.http.HttpStatus;
 import org.springframework.restdocs.RestDocumentationContextProvider;
 import org.springframework.restdocs.RestDocumentationExtension;
 import org.springframework.transaction.annotation.Transactional;
@@ -58,7 +57,6 @@ public class BookmarkAcceptanceTest {
 
     @Autowired
     FolderRepository folderRepository;
-
 
     @LocalServerPort
     private int port;
@@ -108,7 +106,7 @@ public class BookmarkAcceptanceTest {
 
         // when
         String 검색어 = "민지";
-        List<String> 검색_결과 = 북마크_검색_API(검색어).jsonPath()
+        List<String> 검색_결과 = 북마크_검색_API(spec, 검색어).jsonPath()
             .getList(DATA_CONTENT_NAME);
 
         // then
@@ -246,8 +244,8 @@ public class BookmarkAcceptanceTest {
         ExtractableResponse<Response> response = 북마크_삭제_API(spec, 삭제대상_ID);
 
         // then
-        int statusCode = response.statusCode();
-        assertThat(HttpStatus.NO_CONTENT.value()).isEqualTo(statusCode);
+        String resultCode = response.jsonPath().get("code");
+        assertThat(resultCode).isEqualTo("200");
     }
 
     private Stream<String> URL_누락_북마크_조회(JsonPath jsonPath) {

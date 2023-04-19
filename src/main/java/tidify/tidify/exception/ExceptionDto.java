@@ -8,12 +8,12 @@ import lombok.ToString;
 @Builder
 @ToString
 public class ExceptionDto {
-    private String resultCode;
+    private String code;
     private String message;
 
     public static ExceptionDto ofFailure(String resultCode, String message) {
         return ExceptionDto.builder()
-            .resultCode(resultCode)
+            .code(resultCode)
             .message(message)
             .build();
     }
