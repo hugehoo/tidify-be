@@ -1,7 +1,6 @@
 package tidify.tidify.controller;
 
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,8 +15,8 @@ import org.springframework.web.bind.annotation.RestController;
 import io.swagger.annotations.Api;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
-import tidify.tidify.dto.BookmarkRequest;
 import tidify.tidify.domain.User;
+import tidify.tidify.dto.BookmarkRequest;
 import tidify.tidify.dto.ObjectResponseDto;
 import tidify.tidify.dto.PageResponseDto;
 import tidify.tidify.dto.ResponseDto;
@@ -74,11 +73,11 @@ public class BookmarkController {
 
     @DeleteMapping("/{bookmarkId}")
     @Operation(summary="북마크 삭제")
-    private ResponseEntity<Void> deleteBookmark(
+    private ResponseDto deleteBookmark(
         @AuthenticationPrincipal User user,
         @PathVariable("bookmarkId") Long bookmarkId
     ) {
         bookmarkService.deleteBookmark(bookmarkId, user);
-        return ResponseEntity.noContent().build();
+        return ResponseDto.ofDeleteApi();
     }
 }

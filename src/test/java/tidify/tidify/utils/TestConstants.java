@@ -11,5 +11,5 @@ public class TestConstants {
     public static final String DATA_FOLDER_NAME = "data.folderName";
     public static final String DATA_NAME = "data.name";
     public static final String DATA_URL = "data.url";
-    public static final String ERROR_CODE = "resultCode";
+    public static final String ERROR_CODE = "code";
 }

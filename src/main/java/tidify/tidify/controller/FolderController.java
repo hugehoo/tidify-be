@@ -1,10 +1,6 @@
 package tidify.tidify.controller;
 
-import java.net.URI;
-
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,11 +14,10 @@ import org.springframework.web.bind.annotation.RestController;
 import io.swagger.annotations.Api;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
-import tidify.tidify.dto.BookmarkResponse;
+import tidify.tidify.domain.User;
 import tidify.tidify.dto.CustomPage;
 import tidify.tidify.dto.FolderRequest;
 import tidify.tidify.dto.FolderResponse;
-import tidify.tidify.domain.User;
 import tidify.tidify.dto.ObjectResponseDto;
 import tidify.tidify.dto.PageResponseDto;
 import tidify.tidify.dto.ResponseDto;
@@ -88,10 +83,10 @@ public class FolderController {
 
     @Operation(summary = "폴더 삭제")
     @DeleteMapping("/{folderId}")
-    private ResponseEntity<Void> deleteFolders(
+    private ResponseDto deleteFolders(
         @AuthenticationPrincipal User user,
         @PathVariable("folderId") Long folderId) {
         folderService.deleteFolder(folderId, user);
-        return ResponseEntity.noContent().build();
+        return ResponseDto.ofDeleteApi();
     }
 }
