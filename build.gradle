@@ -200,14 +200,22 @@ asciidoctor {
 
 task copyDocument(type: Copy) {
     dependsOn asciidoctor
-
-    from file("build/generated-snippets")
-    into file("src/main/resources/static/docs")
+//    from file("build/generated-snippets")
+//    into file("src/main/resources/static/docs")
+    from file("${asciidoctor.outputDir}")
+    into file("build/resources/main/static")
 }
-
+//task copyDocument(type: Copy) {
+//    dependsOn asciidoctor
+//    from file("${asciidoctor.outputDir}")
+//    into file("build/resources/main/static")
+//}
 bootJar {
     dependsOn copyDocument
-    from("${asciidoctor.outputDir}/html5") {
-        into 'static/docs'
+//    from("${asciidoctor.outputDir}/html5") {
+//        into 'static/docs'
+//    }
+    from("${asciidoctor.outputDir}") {
+        into "static/docs"
     }
 }

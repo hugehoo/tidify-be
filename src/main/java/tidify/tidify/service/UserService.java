@@ -6,15 +6,15 @@ import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import tidify.tidify.redis.RefreshToken;
+import tidify.tidify.domain.SocialType;
+import tidify.tidify.domain.User;
+import tidify.tidify.dto.UserDto;
+import tidify.tidify.oauth.SocialLoginFactory;
 import tidify.tidify.redis.RedisTokenRepository;
+import tidify.tidify.redis.RefreshToken;
+import tidify.tidify.repository.UserRepository;
 import tidify.tidify.security.JwtTokenProvider;
 import tidify.tidify.security.Token;
-import tidify.tidify.domain.SocialType;
-import tidify.tidify.repository.UserRepository;
-import tidify.tidify.domain.User;
-import tidify.tidify.oauth.SocialLoginFactory;
-import tidify.tidify.dto.UserDto;
 
 @Slf4j
 @Service
@@ -31,7 +31,6 @@ public class UserService {
 
     private final UserRepository userRepository;
 
-    // 여기서 transaction 전파는 어떡할 것인가?
     @Transactional
     public Token getAuthenticate(String idToken, SocialType type) {
         Token token = getToken(idToken, type);
@@ -46,7 +45,7 @@ public class UserService {
     }
 
     private void saveTokenInRedis(Token token) {
-        redisTokenRepository.save(RefreshToken.of(token.getRefreshToken(), token.getKey()));
+        redisTokenRepository.save(RefreshToken.of(token.getKey(), token.getRefreshToken()));
     }
 
     private void saveOrUpdateUser(Token token) {
