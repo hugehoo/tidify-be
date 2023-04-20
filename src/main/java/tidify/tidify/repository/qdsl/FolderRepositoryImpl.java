@@ -39,6 +39,7 @@ public class FolderRepositoryImpl implements FolderRepositoryCustom {
             .groupBy(qFolder)
             .offset(pageable.getOffset())
             .limit(pageable.getPageSize())
+            .orderBy(qFolder.createTimestamp.desc())
             .fetch();
 
         JPAQuery<Long> count = query.select(qFolder.count())

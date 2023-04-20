@@ -1,7 +1,5 @@
 package tidify.tidify.service;
 
-import java.util.Optional;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -9,15 +7,14 @@ import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 import tidify.tidify.domain.Folder;
+import tidify.tidify.domain.User;
 import tidify.tidify.dto.BookmarkResponse;
 import tidify.tidify.dto.CustomPage;
 import tidify.tidify.dto.FolderRequest;
 import tidify.tidify.dto.FolderResponse;
-import tidify.tidify.dto.ObjectResponseDto;
 import tidify.tidify.exception.ErrorTypes;
 import tidify.tidify.exception.ResourceNotFoundException;
 import tidify.tidify.repository.FolderRepository;
-import tidify.tidify.domain.User;
 
 @Service
 @RequiredArgsConstructor

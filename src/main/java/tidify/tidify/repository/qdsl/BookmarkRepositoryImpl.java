@@ -38,6 +38,7 @@ public class BookmarkRepositoryImpl implements BookmarkRepositoryCustom {
             .on(qFolder.eq(qBookmark.folder))
             .offset(pageable.getOffset())
             .limit(pageable.getPageSize())
+            .orderBy(qBookmark.createTimestamp.desc())
             .fetch();
 
         JPAQuery<Long> count = query.select(qBookmark.count())
@@ -59,6 +60,7 @@ public class BookmarkRepositoryImpl implements BookmarkRepositoryCustom {
             .on(qFolder.eq(qBookmark.folder))
             .offset(pageable.getOffset())
             .limit(pageable.getPageSize())
+            .orderBy(qBookmark.createTimestamp.desc())
             .distinct()
             .fetch();
 
