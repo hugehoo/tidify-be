@@ -1,5 +1,7 @@
 package tidify.tidify.controller;
 
+import javax.validation.Valid;
+
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -56,7 +58,7 @@ public class BookmarkController {
     @Operation(summary="북마크 생성", description="북마크를 생성")
     private ResponseDto createBookmark(
         @AuthenticationPrincipal User user,
-        @RequestBody BookmarkRequest request
+        @Valid @RequestBody BookmarkRequest request
     ) {
         return new ObjectResponseDto<>(bookmarkService.createBookmark(request, user));
     }
@@ -66,7 +68,7 @@ public class BookmarkController {
     private ResponseDto modifyBookmark(
         @AuthenticationPrincipal User user,
         @PathVariable("bookmarkId") Long bookmarkId,
-        @RequestBody BookmarkRequest request
+        @Valid @RequestBody BookmarkRequest request
     ) {
         return new ObjectResponseDto<>(bookmarkService.modifyBookmark(bookmarkId, user, request));
     }
