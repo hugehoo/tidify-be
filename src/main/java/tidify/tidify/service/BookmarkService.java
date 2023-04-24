@@ -100,7 +100,7 @@ public class BookmarkService {
 
     private String getNameByOption(BookmarkRequest request, String url) {
         String name = request.getName();
-        if (name == null) {
+        if (name == null || name.isBlank()) {
             return url;
         }
         return name;

@@ -155,6 +155,28 @@ public class BookmarkAcceptanceTest {
         assertThat(url).isEqualTo(name);
     }
 
+
+    /**
+     * given 북마크 생성 시 이름을 "     " (공백)으로 지정하여
+     * when 북마크를 저장하면
+     * then 저장된 북마크의 이름은 url 과 동일하다.
+     */
+    @Test
+    void 북마크_생성_이름_공백_테스트() {
+        // given
+        String 이름_공백 = "       ";
+        Map<String, Object> 북마크_정보 = 북마크_Request_Body(이름_공백, URL_GOOGLE, 0L);
+
+        // when
+        ExtractableResponse<Response> 북마크 = 북마크_생성_API(spec, 북마크_정보);
+
+        // then
+        String url = 북마크.jsonPath().get("url");
+        String name = 북마크.jsonPath().get("name");
+
+        assertThat(url).isEqualTo(name);
+    }
+
     /**
      * given 기존 북마크의 이름이 있을 때
      * when 북마크의 이름을 수정하면
