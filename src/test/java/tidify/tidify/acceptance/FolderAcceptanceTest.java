@@ -145,7 +145,7 @@ public class FolderAcceptanceTest {
         String statusCode = 폴더_생성_API(spec, data).jsonPath().get(ERROR_CODE);
 
         // then
-        assertThat(ErrorTypes.SQL_VIOLATION_EXCEPTION.getCode()).isEqualTo((statusCode));
+        assertThat(ErrorTypes.BAD_REQUEST_EXCEPTION.getCode()).isEqualTo((statusCode));
     }
 
     /**
@@ -165,7 +165,7 @@ public class FolderAcceptanceTest {
         String statusCode = 폴더_생성_API(spec, data).jsonPath().get(ERROR_CODE);
 
         // then
-        assertThat(ErrorTypes.SQL_VIOLATION_EXCEPTION.getCode()).isEqualTo((statusCode));
+        assertThat(ErrorTypes.BAD_REQUEST_EXCEPTION.getCode()).isEqualTo((statusCode));
     }
 
     /**

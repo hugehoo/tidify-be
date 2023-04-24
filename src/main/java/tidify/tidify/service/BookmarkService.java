@@ -9,15 +9,14 @@ import jdk.jfr.Description;
 import lombok.RequiredArgsConstructor;
 import tidify.tidify.domain.Bookmark;
 import tidify.tidify.domain.Folder;
+import tidify.tidify.domain.User;
 import tidify.tidify.dto.BookmarkRequest;
 import tidify.tidify.dto.BookmarkResponse;
 import tidify.tidify.dto.CustomPage;
-import tidify.tidify.dto.PageResponseDto;
 import tidify.tidify.exception.ErrorTypes;
 import tidify.tidify.exception.ResourceNotFoundException;
 import tidify.tidify.repository.BookmarkRepository;
 import tidify.tidify.repository.FolderRepository;
-import tidify.tidify.domain.User;
 
 @Service
 @RequiredArgsConstructor
@@ -31,11 +30,6 @@ public class BookmarkService {
     public CustomPage getAllBookmarks(User user, Pageable pageable) {
         Page<BookmarkResponse> bookmarks = bookmarkRepository.findBookmarksWithFolderId(user, pageable);
         return CustomPage.of(bookmarks);
-
-        // Page<BookmarkResponse> bookmarks = bookmarkRepository.findBookmarksWithFolderId(user, pageable);
-        // new CustomPage<>(bookmarks);
-        // new PageResponseDto<BookmarkResponse>(bookmarks);
-
     }
 
     @Transactional(readOnly = true)
@@ -106,7 +100,7 @@ public class BookmarkService {
 
     private String getNameByOption(BookmarkRequest request, String url) {
         String name = request.getName();
-        if (name == null) {
+        if (name == null || name.isBlank()) {
             return url;
         }
         return name;

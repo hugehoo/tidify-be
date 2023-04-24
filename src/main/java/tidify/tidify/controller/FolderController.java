@@ -1,5 +1,7 @@
 package tidify.tidify.controller;
 
+import javax.validation.Valid;
+
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -66,7 +68,7 @@ public class FolderController {
     @Operation(summary = "폴더 생성")
     @PostMapping
     private ResponseDto createFolders(
-        @AuthenticationPrincipal User user, @RequestBody FolderRequest request) {
+        @AuthenticationPrincipal User user, @Valid @RequestBody FolderRequest request) {
         FolderResponse response = folderService.createFolder(request, user);
         return new ObjectResponseDto<>(response);
     }
@@ -76,7 +78,7 @@ public class FolderController {
     private ResponseDto modifyFolders(
         @AuthenticationPrincipal User user,
         @PathVariable("folderId") Long folderId,
-        @RequestBody FolderRequest request) {
+        @Valid @RequestBody FolderRequest request) {
         FolderResponse response = folderService.modifyFolder(folderId, request, user);
         return new ObjectResponseDto<>(response);
     }
