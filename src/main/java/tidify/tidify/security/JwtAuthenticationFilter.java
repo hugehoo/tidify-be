@@ -45,7 +45,7 @@ public class JwtAuthenticationFilter extends GenericFilterBean {
             rotateTokens(response, refreshToken);
         }
         //TODO : doFilter 실패하면 예외 터진다. -> 핸들러에서 잡아줘야해
-        chain.doFilter(servletRequest, servletResponse);
+        chain.doFilter(request, response);
     }
 
     private void rotateTokens(HttpServletResponse response, String refreshToken) {
@@ -60,9 +60,9 @@ public class JwtAuthenticationFilter extends GenericFilterBean {
         return !map.isEmpty();
     }
 
-    private void setHeaders(HttpServletResponse httpServletResponse, Map<String, String> map) {
-        httpServletResponse.setHeader(REFRESH_TOKEN, map.get(REFRESH_TOKEN));
-        httpServletResponse.setHeader(X_AUTH_TOKEN, map.get(X_AUTH_TOKEN));
+    private void setHeaders(HttpServletResponse response, Map<String, String> map) {
+        response.setHeader(REFRESH_TOKEN, map.get(REFRESH_TOKEN));
+        response.setHeader(X_AUTH_TOKEN, map.get(X_AUTH_TOKEN));
     }
 
     public void setAuthentication(String token) {
