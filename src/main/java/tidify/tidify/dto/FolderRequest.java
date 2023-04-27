@@ -19,7 +19,6 @@ import tidify.tidify.domain.LabelType;
 public class FolderRequest {
 
     @NotBlank
-    @Length(max = 15)
     private String folderName;
 
     @NotNull
