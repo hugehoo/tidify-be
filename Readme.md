@@ -1,3 +1,20 @@
+![img.png](img.png)
+
+Project Tech Stack
+- Java 17
+- Springboot 2.7.8
+- Jpa 
+- QueryDSL 1.0.10
+- Docker
+- Redis
+- Mysql 8
+- NCloud
+
+프로젝트 구조
+
+DB ERD 구조
+
+
 ### TODO
 
 - [X] Dockerfile, ssh 자동화 script
