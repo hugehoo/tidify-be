@@ -14,7 +14,6 @@ public class BookmarkRequest {
     @NotBlank
     private String url;
 
-    @Length(max = 15)
     private String name;
 
     private Long folderId;

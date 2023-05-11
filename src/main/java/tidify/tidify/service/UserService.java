@@ -69,4 +69,10 @@ public class UserService {
         user.setRefreshToken(token.getRefreshToken());
     }
 
+    // 이거 탈취당한 토큰으로 그냥 찌르기만 하면 걍 삭제되는데, 다른 대책을 세워야할듯
+    public void userWithdraw(User user) {
+        // Todo user 연관된 folder, bookmark 모두 삭제
+        // accountRepository.deleteUserRelateInfo(user);
+        userRepository.delete(user);
+    }
 }

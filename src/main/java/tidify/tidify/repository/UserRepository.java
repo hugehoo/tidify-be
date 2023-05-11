@@ -8,7 +8,7 @@ import org.springframework.stereotype.Repository;
 import tidify.tidify.domain.User;
 
 @Repository
-public interface UserRepository extends JpaRepository<User, Long> {
+public interface UserRepository extends JpaRepository<User, Long>, UserRepositoryCustom {
 
     Optional<User> findUserByEmailAndDelFalse(String email);
 
