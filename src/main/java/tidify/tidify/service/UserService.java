@@ -34,7 +34,7 @@ public class UserService {
     @Transactional
     public Token getAuthenticate(String idToken, SocialType type) {
         Token token = getToken(idToken, type);
-        saveTokenInRedis(token);
+        // saveTokenInRedis(token);
         saveOrUpdateUser(token);
         return token;
     }

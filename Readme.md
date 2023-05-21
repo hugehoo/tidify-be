@@ -9,6 +9,8 @@
 - Redis
 - Mysql 8
 - NCloud
+- Prometheus / Grafana
+
 
 ### 프로젝트 아키텍트
 
