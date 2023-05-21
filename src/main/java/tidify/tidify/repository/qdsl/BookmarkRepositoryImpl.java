@@ -51,7 +51,7 @@ public class BookmarkRepositoryImpl implements BookmarkRepositoryCustom {
     @Override
     public Page<BookmarkResponse> searchBookmarks(User user, String searchKeyword, Pageable pageable) {
         // 이거 매번 생성될 건데 성능고려해서 개선할 수 없나?
-        BooleanBuilder keywordBuilder = searchKeywords(searchKeyword, new BooleanBuilder());
+        BooleanBuilder keywordBuilder = searchKeywords(searchKeyword);
 
         List<BookmarkResponse> fetch = query.select(new QBookmarkResponse(qBookmark, qFolder.id))
             .from(qBookmark)
@@ -75,13 +75,14 @@ public class BookmarkRepositoryImpl implements BookmarkRepositoryCustom {
         return qBookmark.user.eq(user).and(qBookmark.del.isFalse());
     }
 
-    private BooleanBuilder searchKeywords(String searchKeyword, BooleanBuilder builder) {
+    private BooleanBuilder searchKeywords(String searchKeyword) {
+        BooleanBuilder builder = new BooleanBuilder();
         if (searchKeyword.length() == 1) {
-            builder.and(qBookmark.name.startsWith(searchKeyword));
-        } else {
-            Arrays.stream(searchKeyword.split(" "))
-                .forEach(word -> builder.and(qBookmark.name.contains(word))); // and 냐 or 이냐는 의도에 따라 다를듯
+            return builder.and(qBookmark.name.startsWith(searchKeyword));
         }
+
+        Arrays.stream(searchKeyword.split(" "))
+            .forEach(word -> builder.and(qBookmark.name.contains(word))); // and 냐 or 이냐는 의도에 따라 다를듯
         return builder;
     }
 
