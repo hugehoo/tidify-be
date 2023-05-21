@@ -5,8 +5,6 @@ import org.springframework.stereotype.Component;
 
 import lombok.RequiredArgsConstructor;
 import tidify.tidify.oauth.SocialLogin;
-import tidify.tidify.oauth.kakao.feign.KakaoTokenFeign;
-import tidify.tidify.oauth.kakao.KakaoLoginTokenInfo;
 import tidify.tidify.oauth.kakao.feign.KakaoUserFeign;
 import tidify.tidify.domain.SocialType;
 import tidify.tidify.domain.User;
