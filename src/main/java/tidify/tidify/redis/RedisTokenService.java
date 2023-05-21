@@ -33,7 +33,11 @@ public class RedisTokenService {
             token -> reIssueBothTokens(token.getUserEmail(), map),
             () -> logoutProcess(refreshToken)
         );
+//
+        String userPk = jwtTokenProvider.getUserPk(refreshToken, true);
+        reIssueBothTokens(userPk, map);
 
+        //
         return map;
     }
 

@@ -1,63 +1,19 @@
-### TODO
+![img.png](img.png)
 
-- [X] Dockerfile, ssh 자동화 script
-- [X] validation
-- [X] RestExceptionHandler
-- [X] User 연관관계 매핑
-    - [X] Folder
-    - [X] Bookmark
-- [X] Pagination + 정렬
-- [X] Redis 띄우기
-    - [X] 저장 형식 수정 : {RT : UserPk}
-- [ ] Redis Cluster 생성
-    - [ ] Master Slave
-- [X] 카카오 로그인 로직 변경 -> kakao sdk 에서 access token 을 그대로 넘겨준다.
-- [X] refresh token 만료시 -> 재발급
-- [X] API 문서 - Swagger
-- [X] Redis Cache - Label 캐싱
-- [X] Apple login
-- [ ] createTime, updateTime 자동 변경 audity 추가
-- [ ] ERD
-- [ ] Log
-- [ ] 예외처리 고도화
-- [ ] WebSecurityConfigurerAdapter deprecated
-- [ ] 로그아웃 API
-    - 로그아웃 후에 다시 로그인 시, 기존 존재하는 계정이니 로직 분기할 것.
-- redis 가 고장나서 조회 못한것과, redis에 키가 없어서 조회못하는걸 구분해야한다. 해야하나?
-- refreshToken -> accessToken 재발급할 땐 refreshToken 자체만으로 발급
-  - refreshToken 재발급땐 redis 조회.-> 특정 uri 로 직접 요청. refreshToken 의 만료시간이 얼마 안남았을 때, 
-  - ios 쪽에서 직접 refresh-reissue URL 호출 -> 이러면 refreshToken 탈취돼도 우리 URL 모르기에 재발급 못받는다.
-  - refresh-reissue URL 호출되면, redis에서 refreshToken 조회 -> 존재하면 재발급, 
-- [X] 왜 Bookmark(N) 에서 Folder(1)로 단방향으로 연관관계를 맺었나?
-  - Folder 에서 Bookmark 를 참조하면, `List<Bookmark>` 를 들고 있어야 한다.
-  - 이렇게 하면 생길 수 있는 문제는, Lazy 로 List<Bookmark> 를 가져오더라도 Folder 당 가지는 Bookmark 의 개수가 많아도 페이징이 불가하다.
-  - 때문에 Bookmark 에서 Folder 를 단방향 참조하고, Folder + Bookmark 를 가져와야 한다면 조인하여 페이징을 적용할 수 있도록 한다.
-  - 그리고 쿼리도 두번으로 나눠서 날아감. `folder 우선 조회`, `bookmakr 조회시 where절에 folderID`
+### Project Tech Stack
+- Java 17
+- Springboot 2.7.8
+- Jpa 
+- QueryDSL 1.0.10
+- Docker
+- Redis
+- Mysql 8
+- NCloud
 
-### label Controller
+### 프로젝트 아키텍트
 
-- [X] 조회
 
-### folder
-
-- [X] 조회
-- [X] 생성
-- [X] 수정
-- [X] 삭제
-
-### bookmark
-
-- [X] 조회
-- [X] 생성
-- [X] 수정
-- [X] 삭제
-
-### Test Code
-
-- [ ] 인수테스트 시나리오 작성
-    - [X] Folder
-    - [X] Bookmark
-    - [ ] Oauth2
+### DB ERD 구조
 
 <hr>
 

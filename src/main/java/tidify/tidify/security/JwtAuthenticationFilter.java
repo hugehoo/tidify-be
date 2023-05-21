@@ -4,6 +4,7 @@ import static tidify.tidify.common.Constants.X_AUTH_TOKEN;
 import static tidify.tidify.common.Constants.REFRESH_TOKEN;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 
 import javax.servlet.FilterChain;
@@ -20,6 +21,7 @@ import org.springframework.web.filter.GenericFilterBean;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import tidify.tidify.redis.RedisTokenService;
+import tidify.tidify.redis.RefreshToken;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -49,11 +51,25 @@ public class JwtAuthenticationFilter extends GenericFilterBean {
     }
 
     private void rotateTokens(HttpServletResponse response, String refreshToken) {
-        Map<String, String> map = redisTokenService.createBothTokens(refreshToken);
-        if (isTokensIssued(map)) {
-            setHeaders(response, map);
-            setAuthentication(map.get(X_AUTH_TOKEN));
-        }
+
+        Map<String, String> map = new HashMap<>();
+        String userPk = jwtTokenProvider.getUserPk(refreshToken, true);
+        reIssueBothTokens(userPk, map);
+        setHeaders(response, map);
+        setAuthentication(map.get(X_AUTH_TOKEN));
+
+        // Map<String, String> map = redisTokenService.createBothTokens(refreshToken);
+        // if (isTokensIssued(map)) {
+        //     setHeaders(response, map);
+        //     setAuthentication(map.get(X_AUTH_TOKEN));
+        // }
+    }
+
+    private void reIssueBothTokens(String userPk, Map<String, String> map) {
+        String newRefreshToken = jwtTokenProvider.createRefreshToken(userPk);
+        String newAccessToken = jwtTokenProvider.createAccessToken(userPk);
+        map.put(X_AUTH_TOKEN, newAccessToken);
+        map.put(REFRESH_TOKEN, newRefreshToken);
     }
 
     private boolean isTokensIssued(Map<String, String> map) {

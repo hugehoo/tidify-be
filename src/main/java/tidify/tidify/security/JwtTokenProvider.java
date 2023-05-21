@@ -16,6 +16,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Component;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -76,7 +77,13 @@ public class JwtTokenProvider {
 
     public String getUserPk(String token, boolean isRefreshToken) {
         String signingKey = isRefreshToken ? refreshSecretKey : secretKey;
-        return Jwts.parser().setSigningKey(signingKey).parseClaimsJws(token).getBody().getSubject();
+        try {
+            Claims claims = Jwts.parser().setSigningKey(signingKey).parseClaimsJws(token).getBody();
+            return Jwts.parser().setSigningKey(signingKey).parseClaimsJws(token).getBody().getSubject();
+        } catch (ExpiredJwtException e) {
+            Claims claims = e.getClaims();
+            return claims.getSubject();
+        }
     }
 
     public boolean validateToken(String jwtToken) {

@@ -30,7 +30,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     public void configure(WebSecurity web) throws Exception {
-        web.ignoring().antMatchers("/oauth2/**");
+        web.ignoring().antMatchers("/oauth2/login");
     }
 
     @Override
@@ -39,11 +39,12 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         http.httpBasic()
             .and()
             .authorizeRequests()
-            .antMatchers("/oauth2/**").permitAll()
+            .antMatchers("/oauth2/login").permitAll()
             .antMatchers("/admin/**").hasRole("ADMIN")
             .antMatchers("/user/**").hasRole("USER")
             .antMatchers("/app/label").permitAll()
             .antMatchers("/app/folders/**").authenticated()
+            .antMatchers("/oauth2/withdrawal").authenticated()
             .antMatchers("/app/bookmarks/**").authenticated()
             .and()
             .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider, redisTokenService), UsernamePasswordAuthenticationFilter.class);
