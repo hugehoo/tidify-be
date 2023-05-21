@@ -13,8 +13,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import io.swagger.annotations.Api;
-import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import tidify.tidify.domain.User;
 import tidify.tidify.dto.CustomPage;
@@ -25,7 +23,6 @@ import tidify.tidify.dto.PageResponseDto;
 import tidify.tidify.dto.ResponseDto;
 import tidify.tidify.service.FolderService;
 
-@Api(tags = "폴더")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("app/folders")
@@ -33,7 +30,6 @@ public class FolderController {
 
     private final FolderService folderService;
 
-    @Operation(summary = "폴더 조회", description = "유저 폴더 조회")
     @GetMapping
     private ResponseDto getFolders(
         @AuthenticationPrincipal User user,
@@ -43,7 +39,6 @@ public class FolderController {
         return new PageResponseDto<>(folders);
     }
 
-    @Operation(summary = "단일 폴더 정보 조회")
     @GetMapping("/{folderId}")
     private ResponseDto getFolders(
         @AuthenticationPrincipal User user,
@@ -53,7 +48,6 @@ public class FolderController {
         return new ObjectResponseDto<>(folder);
     }
 
-    @Operation(description = "폴더 내부 북마크 조회")
     @GetMapping("/{folderId}/bookmarks")
     private ResponseDto getFolderWithBookmarks(
         @AuthenticationPrincipal User user,
@@ -65,7 +59,6 @@ public class FolderController {
         return new PageResponseDto<>(folderWithBookmarks);
     }
 
-    @Operation(summary = "폴더 생성")
     @PostMapping
     private ResponseDto createFolders(
         @AuthenticationPrincipal User user, @Valid @RequestBody FolderRequest request) {
@@ -73,7 +66,6 @@ public class FolderController {
         return new ObjectResponseDto<>(response);
     }
 
-    @Operation(summary = "폴더 수정", description = "폴더 정보(이름, 라벨) 수정")
     @PatchMapping("/{folderId}")
     private ResponseDto modifyFolders(
         @AuthenticationPrincipal User user,
@@ -83,7 +75,6 @@ public class FolderController {
         return new ObjectResponseDto<>(response);
     }
 
-    @Operation(summary = "폴더 삭제")
     @DeleteMapping("/{folderId}")
     private ResponseDto deleteFolders(
         @AuthenticationPrincipal User user,
