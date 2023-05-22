@@ -104,6 +104,10 @@ dependencies {
 
     // prometheus
     runtimeOnly 'io.micrometer:micrometer-registry-prometheus'
+
+    // flyway
+    implementation 'org.flywaydb:flyway-core:6.4.2'
+
 }
 
 def querydslDir = "build/generated/querydsl"
