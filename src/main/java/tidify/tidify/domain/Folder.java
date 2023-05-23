@@ -30,6 +30,9 @@ public class Folder extends BaseEntity {
     @Column(name = "label")
     private LabelType label;
 
+    @Column(name = "is_subscribe")
+    private boolean isSubscribe;
+
     public static Folder of(String name, LabelType type, User user) {
         return Folder.builder()
             .name(name)
@@ -45,5 +48,13 @@ public class Folder extends BaseEntity {
 
     public void delete() {
         this.setDel(true);
+    }
+
+    public void setSharingFolder() {
+        this.isSubscribe = true;
+    }
+
+    public void unSetSharingFolder() {
+        this.isSubscribe = false;
     }
 }

@@ -37,6 +37,9 @@ public class FolderService {
     @Transactional(readOnly = true)
     public CustomPage getFolders(User user, Pageable pageable) {
         Page<FolderResponse> folders = folderRepository.findFoldersWithCount(user, pageable);
+        // 자기 userId 로 공유 folder_id 조회 -> 기존 folders + 구독 folders
+        // folderResponse 에도 플래그 붙여줘야 할듯.
+        // 구독 폴더라도, 자기가 만든 폴더면 다른 플래그가 필요할듯.
         return CustomPage.of(folders);
     }
 
@@ -71,5 +74,19 @@ public class FolderService {
         return folderRepository
             .findFolderByIdAndUser(id, user) // 이미 delete 된 건 못지우게 방어로직 추가
             .orElseThrow(() -> new ResourceNotFoundException(ErrorTypes.FOLDER_NOT_FOUND, id));
+    }
+
+    @Transactional
+    public void setSharingFolder(User user, Long id) {
+        Folder folder = folderRepository.findFolderByIdAndUser(id, user)
+            .orElseThrow(() -> new ResourceNotFoundException(ErrorTypes.FOLDER_NOT_FOUND, id));
+        folder.setSharingFolder();
+    }
+
+    @Transactional
+    public void unSetSharingFolder(User user, Long id) {
+        Folder folder = folderRepository.findFolderByIdAndUser(id, user)
+            .orElseThrow(() -> new ResourceNotFoundException(ErrorTypes.FOLDER_NOT_FOUND, id));
+        folder.unSetSharingFolder();
     }
 }
