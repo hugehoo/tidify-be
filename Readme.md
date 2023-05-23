@@ -1,4 +1,5 @@
-![img.png](img.png)
+![image](https://github.com/hugehoo/tidify-be/assets/92839864/1f60aef5-8ac9-48e8-9b7d-6c934bc8a764)
+
 
 ### Project Tech Stack
 - Java 17
