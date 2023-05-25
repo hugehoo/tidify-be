@@ -26,10 +26,6 @@ public class Bookmark extends BaseEntity {
     @JoinColumn(name = "folder_id", nullable = true)
     private Folder folder;
 
-    // TODO : 연관관계 추후에 맺기
-    // @Column(name = "user_id")
-    // private Long userId;
-
     @ManyToOne(fetch = FetchType.LAZY)
     private User user;
 
@@ -41,8 +37,8 @@ public class Bookmark extends BaseEntity {
         this.user = user;
     }
 
-    public void moidfy(String url, String name, Folder folder) {
-        this.url = url;
+    public void modify(String url, String name, Folder folder) {
+        this.url = verifyUrl(url);
         this.name = name;
         this.folder = folder;
     }

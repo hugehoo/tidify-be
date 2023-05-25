@@ -1,6 +1,7 @@
 
 ![img_1.png](img_1.png)
 
+### 🔗 [iOS Repo](https://github.com/Nexters/tidify-iOS)
 
 ### Project Tech Stack
 - Java 17
@@ -8,10 +9,10 @@
 - Jpa 
 - QueryDSL 1.0.10
 - Docker
-- Redis
 - Mysql 8
 - NCloud
 - Prometheus / Grafana
+- <s>Redis</s>
 
 
 ### 프로젝트 아키텍트
