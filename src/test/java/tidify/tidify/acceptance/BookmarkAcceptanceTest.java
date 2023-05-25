@@ -46,7 +46,8 @@ public class BookmarkAcceptanceTest {
     final String 폴더_2_이름 = "뉴진스의 폴더2";
     final String 색상 = "GREEN";
     final String 북마크_이름 = "뉴진스의 북마크";
-    final String URL_GOOGLE = "www.google.com";
+    final String URL_WITH_NO_PROTOCOL = "www.google.com";
+    final String URL_WITH_PROTOCOL = "https://www.google.com";
     final String URL_NAVER = "www.naver.com";
     final String 수정된_북마크_이름 = "뉴진스의 수정된 북마크";
 
@@ -97,9 +98,9 @@ public class BookmarkAcceptanceTest {
     @Test
     void 북마크_검색_테스트() {
         // given
-        Map<String, Object> 북마크_정보_1 = 북마크_Request_Body("민지", URL_GOOGLE, 0L);
-        Map<String, Object> 북마크_정보_2 = 북마크_Request_Body("해린", URL_GOOGLE, 0L);
-        Map<String, Object> 북마크_정보_3 = 북마크_Request_Body("혜인", URL_GOOGLE, 0L);
+        Map<String, Object> 북마크_정보_1 = 북마크_Request_Body("민지", URL_WITH_NO_PROTOCOL, 0L);
+        Map<String, Object> 북마크_정보_2 = 북마크_Request_Body("해린", URL_WITH_NO_PROTOCOL, 0L);
+        Map<String, Object> 북마크_정보_3 = 북마크_Request_Body("혜인", URL_WITH_NO_PROTOCOL, 0L);
         북마크_생성_API(spec, 북마크_정보_1);
         북마크_생성_API(spec, 북마크_정보_2);
         북마크_생성_API(spec, 북마크_정보_3);
@@ -121,7 +122,7 @@ public class BookmarkAcceptanceTest {
     @Test
     void 북마크_생성_테스트() {
         // given
-        Map<String, Object> 북마크_정보 = 북마크_Request_Body(북마크_이름, URL_GOOGLE, 0L);
+        Map<String, Object> 북마크_정보 = 북마크_Request_Body(북마크_이름, URL_WITH_PROTOCOL, 0L);
 
         // when
         ExtractableResponse<Response> 북마크 = 북마크_생성_API(spec, 북마크_정보);
@@ -130,7 +131,28 @@ public class BookmarkAcceptanceTest {
         String url = 북마크.jsonPath().get(DATA_URL);
         String name = 북마크.jsonPath().get(DATA_NAME);
 
-        assertEquals(URL_GOOGLE, url);
+        assertEquals(URL_WITH_PROTOCOL, url);
+        assertEquals(북마크_이름, name);
+    }
+
+    /**
+     * given 북마크 생성시
+     * when url 에 https:// 혹으 http:// 프로토콜이 없으면
+     * then  https:// 을 url 의 prefix 로 붙여 북마크를 생성한다.
+     */
+    @Test
+    void 북마크_생성_prefix_테스트() {
+        // given
+        Map<String, Object> 북마크_정보 = 북마크_Request_Body(북마크_이름, URL_WITH_NO_PROTOCOL, 0L);
+
+        // when
+        ExtractableResponse<Response> 북마크 = 북마크_생성_API(spec, 북마크_정보);
+
+        // then
+        String url = 북마크.jsonPath().get(DATA_URL);
+        String name = 북마크.jsonPath().get(DATA_NAME);
+
+        assertEquals("https://" + URL_WITH_NO_PROTOCOL, url);
         assertEquals(북마크_이름, name);
     }
 
@@ -143,7 +165,7 @@ public class BookmarkAcceptanceTest {
     void 북마크_생성_이름_누락_테스트() {
         // given
         String 이름_누락 = null;
-        Map<String, Object> 북마크_정보 = 북마크_Request_Body(이름_누락, URL_GOOGLE, 0L);
+        Map<String, Object> 북마크_정보 = 북마크_Request_Body(이름_누락, URL_WITH_NO_PROTOCOL, 0L);
 
         // when
         ExtractableResponse<Response> 북마크 = 북마크_생성_API(spec, 북마크_정보);
@@ -155,7 +177,6 @@ public class BookmarkAcceptanceTest {
         assertThat(url).isEqualTo(name);
     }
 
-
     /**
      * given 북마크 생성 시 이름을 "     " (공백)으로 지정하여
      * when 북마크를 저장하면
@@ -165,7 +186,7 @@ public class BookmarkAcceptanceTest {
     void 북마크_생성_이름_공백_테스트() {
         // given
         String 이름_공백 = "       ";
-        Map<String, Object> 북마크_정보 = 북마크_Request_Body(이름_공백, URL_GOOGLE, 0L);
+        Map<String, Object> 북마크_정보 = 북마크_Request_Body(이름_공백, URL_WITH_NO_PROTOCOL, 0L);
 
         // when
         ExtractableResponse<Response> 북마크 = 북마크_생성_API(spec, 북마크_정보);
@@ -188,7 +209,7 @@ public class BookmarkAcceptanceTest {
         Long 북마크_ID = 북마크_생성(0L);
 
         // when
-        Map<String, Object> 북마크_정보_수정 = 북마크_Request_Body(수정된_북마크_이름, URL_GOOGLE, 0L);
+        Map<String, Object> 북마크_정보_수정 = 북마크_Request_Body(수정된_북마크_이름, URL_WITH_NO_PROTOCOL, 0L);
         String name = 북마크_수정_API(spec, 북마크_ID, 북마크_정보_수정)
             .jsonPath()
             .get(DATA_NAME);
@@ -284,7 +305,7 @@ public class BookmarkAcceptanceTest {
     }
 
     private Long 북마크_생성(long 폴더_1_Id) {
-        Map<String, Object> bookmarkRequestBody = 북마크_Request_Body(북마크_이름, URL_GOOGLE, 폴더_1_Id);
+        Map<String, Object> bookmarkRequestBody = 북마크_Request_Body(북마크_이름, URL_WITH_NO_PROTOCOL, 폴더_1_Id);
 
         return 북마크_생성_API(spec, bookmarkRequestBody)
             .jsonPath()
@@ -301,7 +322,7 @@ public class BookmarkAcceptanceTest {
     }
 
     private void 북마크__수정(Long 폴더_2_ID, Long 북마크_ID) {
-        북마크_수정_API(spec, 북마크_ID, 북마크_Request_Body(북마크_이름, URL_GOOGLE, 폴더_2_ID));
+        북마크_수정_API(spec, 북마크_ID, 북마크_Request_Body(북마크_이름, URL_WITH_NO_PROTOCOL, 폴더_2_ID));
     }
 
 }
