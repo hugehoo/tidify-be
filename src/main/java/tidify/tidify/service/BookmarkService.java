@@ -40,7 +40,6 @@ public class BookmarkService {
 
     @Transactional
     public BookmarkResponse createBookmark(BookmarkRequest request, User user) {
-        // TODO : request 유알엘 검증 필요 (https:// 붙이는 형식) 대소문자 고려해야함
         Bookmark bookmark = buildBookmark(request, user);
         bookmarkRepository.save(bookmark);
         return BookmarkResponse.of(bookmark, request.getFolderId());
@@ -49,27 +48,24 @@ public class BookmarkService {
     @Transactional
     public BookmarkResponse.BookmarkModifyResponse modifyBookmark(Long id, User user, BookmarkRequest request) {
 
-        Long userId = user.getId();
-        Bookmark bookmark = getBookmark(id, userId);
+        Bookmark bookmark = getBookmark(id, user);
 
         String url = request.getUrl();
         String name = getNameByOption(request, url);
 
         Folder folder = getFolder(request.getFolderId(), user);
-        bookmark.moidfy(url, name, folder);
-
+        bookmark.modify(url, name, folder);
         return new BookmarkResponse.BookmarkModifyResponse(bookmark);
     }
 
     @Transactional
     public void deleteBookmark(Long id, User user) {
-        Bookmark bookmark = getBookmark(id, user.getId());
+        Bookmark bookmark = getBookmark(id, user);
         bookmark.delete();
     }
 
-    private Bookmark getBookmark(Long id, Long userId) {
-        return bookmarkRepository
-            .findBookmarkByIdAndUserIdAndDelFalse(id, userId)
+    private Bookmark getBookmark(Long id, User user) {
+        return bookmarkRepository.findBookmarkByIdAndUserAndDelFalse(id, user)
             .orElseThrow(() -> new ResourceNotFoundException(ErrorTypes.BOOKMARK_NOT_FOUND, id));
     }
 

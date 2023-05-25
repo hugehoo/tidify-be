@@ -10,10 +10,12 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import tidify.tidify.domain.Bookmark;
+import tidify.tidify.domain.User;
 
 @Repository
 public interface BookmarkRepository extends JpaRepository<Bookmark, Long>, BookmarkRepositoryCustom {
-    Optional<Bookmark> findBookmarkByIdAndUserIdAndDelFalse(Long id, Long userId);
+
+    Optional<Bookmark> findBookmarkByIdAndUserAndDelFalse(Long id, User user);
 
     Bookmark findBookmarkByIdAndDel(Long bookmarkId, Boolean bool);
 
