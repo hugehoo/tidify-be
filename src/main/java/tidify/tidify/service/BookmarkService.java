@@ -40,8 +40,7 @@ public class BookmarkService {
 
     @Transactional
     public BookmarkResponse createBookmark(BookmarkRequest request, User user) {
-        // TODO : request 유알엘 검증 필요 (https:// 붙이는 형식)
-        // 대소문자 고려해야함
+        // TODO : request 유알엘 검증 필요 (https:// 붙이는 형식) 대소문자 고려해야함
         Bookmark bookmark = buildBookmark(request, user);
         bookmarkRepository.save(bookmark);
         return BookmarkResponse.of(bookmark, request.getFolderId());
@@ -89,7 +88,6 @@ public class BookmarkService {
         Folder folder = getFolder(folderId, user);
 
         String url = request.getUrl();
-        String url2 = verifyUrl(request.getUrl());
         String name = getNameByOption(request, url);
 
         return Bookmark.create()
@@ -100,16 +98,6 @@ public class BookmarkService {
             .build();
     }
 
-    private String verifyUrl(String url) {
-
-        String HTTP = "http://";
-        String HTTPS = "https://";
-
-        if (url.startsWith(HTTP) || url.startsWith(HTTPS)) {
-            return url;
-        }
-        return String.format("https://%s", url);
-    }
 
     private String getNameByOption(BookmarkRequest request, String url) {
         String name = request.getName();

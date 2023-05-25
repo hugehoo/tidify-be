@@ -35,7 +35,7 @@ public class Bookmark extends BaseEntity {
 
     @Builder(builderMethodName = "create")
     public Bookmark(String url, String name, Folder folder, User user) {
-        this.url = url;
+        this.url = verifyUrl(url);
         this.name = name;
         this.folder = folder;
         this.user = user;
@@ -50,4 +50,16 @@ public class Bookmark extends BaseEntity {
     public void delete() {
         this.setDel(true);
     }
+
+    private String verifyUrl(String url) {
+
+        String HTTP = "http://";
+        String HTTPS = "https://";
+
+        if (url.startsWith(HTTP) || url.startsWith(HTTPS)) {
+            return url;
+        }
+        return String.format("https://%s", url);
+    }
+
 }
