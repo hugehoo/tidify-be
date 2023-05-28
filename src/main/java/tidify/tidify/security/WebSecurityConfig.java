@@ -30,8 +30,10 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     public void configure(WebSecurity web) throws Exception {
-        web.ignoring().antMatchers("/oauth2/login");
-        web.ignoring().antMatchers("/actuator/**");
+        web.ignoring()
+            .antMatchers("/oauth2/login")
+            .antMatchers("/actuator/**")
+            .antMatchers("/root");
     }
 
     @Override
