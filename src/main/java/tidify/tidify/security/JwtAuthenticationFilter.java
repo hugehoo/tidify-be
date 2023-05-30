@@ -38,9 +38,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         if (jwtTokenProvider.validateToken(accessToken)) {
             setAuthentication(accessToken);
         } else {
+            // filter 용 exception handler 찾아보고, 거기서 예외처리할것. unchecked Exception 에서 try~catch 불필요
             try {
                 rotateTokens(request, response, refreshToken);
-            } catch (MalformedJwtException e) {
+            } catch (MalformedJwtException | IllegalArgumentException e) {
                 log.info("[Request URI] {} {}", request.getMethod(), request.getRequestURI());
                 log.info("[Request Principal] {} ", request.getUserPrincipal());
                 return;
