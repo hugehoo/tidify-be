@@ -1,5 +1,7 @@
 package tidify.tidify.service;
 
+import java.util.Optional;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -61,6 +63,14 @@ public class FolderService {
         Folder folder = getFolder(id, user);
         folder.delete();
         updateBookmarkAsNoneFolder(user, folder);
+    }
+
+
+    // draft
+    @Transactional
+    public boolean isMyFolder(Long id, User user) {
+        Optional<Folder> optional = folderRepository.findFolderByIdAndUser(id, user);
+        return optional.isPresent();
     }
 
     private void updateBookmarkAsNoneFolder(User user, Folder folder) {
