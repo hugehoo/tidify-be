@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+
 import lombok.RequiredArgsConstructor;
 import tidify.tidify.domain.Folder;
 import tidify.tidify.domain.User;
@@ -65,8 +66,6 @@ public class FolderService {
         updateBookmarkAsNoneFolder(user, folder);
     }
 
-
-    // draft
     @Transactional
     public boolean isMyFolder(Long id, User user) {
         Optional<Folder> optional = folderRepository.findFolderByIdAndUser(id, user);
