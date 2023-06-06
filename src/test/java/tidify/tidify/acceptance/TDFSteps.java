@@ -119,6 +119,23 @@ public class TDFSteps {
             .extract();
     }
 
+    static ExtractableResponse<Response> 폴더_확인_API(RequestSpecification spec, Long folderId) {
+        return RestAssured.given(spec).log().all()
+            .filter(restDocsFilter("folder-verify"))
+            .headers(
+                X_AUTH_TOKEN, ACCESS_TOKEN,
+                "refreshToken", REFRESH_TOKEN,
+                "Content-Type", ContentType.JSON,
+                "Accept", ContentType.JSON)
+            .when()
+            .get("/app/folders/verify?id={folderId}", folderId)
+            .then()
+            .log()
+            .all()
+            .extract();
+    }
+
+
     static ExtractableResponse<Response> 북마크_삭제_API(RequestSpecification spec, long bookmarkId) {
         return RestAssured.given(spec).log().all()
             .filter(restDocsFilter("bookmark-delete"))
