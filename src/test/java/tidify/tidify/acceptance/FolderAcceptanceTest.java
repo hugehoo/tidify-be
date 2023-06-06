@@ -1,6 +1,6 @@
 package tidify.tidify.acceptance;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.restdocs.restassured3.RestAssuredRestDocumentation.*;
 import static tidify.tidify.acceptance.TDFSteps.*;
@@ -191,6 +191,30 @@ public class FolderAcceptanceTest {
             () -> assertThat(북마크.getId()).isEqualTo(북마크_ID),
             () -> assertThat(북마크.getFolder()).isNull(),
             () -> assertThat(resultCode).isEqualTo("200")
+        );
+    }
+
+    /**
+     * given
+     * when 유저가 폴더 id 를 조회하면
+     * then 해당 폴더가 자신의 폴더인지 boolean 으로 리턴한다.
+     */
+    @Test
+    @DisplayName("폴더 구독시, 해당 폴더가 자신의 폴더인지 확인")
+    void 자신의_폴더_확인_테스트() {
+
+        // given
+        Long 폴더_ID = 폴더_생성(폴더_이름, 색상);
+
+        // when
+        ExtractableResponse<Response> response = 폴더_확인_API(spec, 폴더_ID);
+        String resultCode = response.jsonPath().get("code");
+        boolean myFolder = response.jsonPath().get("data");
+
+        // then
+        assertAll(
+            () -> assertThat(resultCode).isEqualTo("200"),
+            () -> assertThat(myFolder).isInstanceOf(Boolean.class)
         );
     }
 
