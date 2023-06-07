@@ -7,9 +7,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-
 import lombok.RequiredArgsConstructor;
 import tidify.tidify.domain.Folder;
+import tidify.tidify.domain.FolderSubscribe;
 import tidify.tidify.domain.User;
 import tidify.tidify.dto.BookmarkResponse;
 import tidify.tidify.dto.CustomPage;
@@ -18,12 +18,16 @@ import tidify.tidify.dto.FolderResponse;
 import tidify.tidify.exception.ErrorTypes;
 import tidify.tidify.exception.ResourceNotFoundException;
 import tidify.tidify.repository.FolderRepository;
+import tidify.tidify.repository.FolderSubscribeRepository;
+import tidify.tidify.repository.UserRepository;
 
 @Service
 @RequiredArgsConstructor
 public class FolderService {
 
     private final FolderRepository folderRepository;
+    private final FolderSubscribeRepository folderSubscribeRepository;
+    private final UserRepository userRepository;
 
     @Transactional(readOnly = true)
     public FolderResponse getFolderById(User user, Long folderId) {
@@ -80,5 +84,32 @@ public class FolderService {
         return folderRepository
             .findFolderByIdAndUser(id, user) // 이미 delete 된 건 못지우게 방어로직 추가
             .orElseThrow(() -> new ResourceNotFoundException(ErrorTypes.FOLDER_NOT_FOUND, id));
+    }
+
+    // TODO : 몇명이 구독하고 있는지도 보여주면 좋겠네.
+    public CustomPage getSubscribed(User user, Pageable pageable) {
+        Page<FolderResponse> folders = folderRepository.findSubscribedFolders(user, pageable);
+        return CustomPage.of(folders);
+    }
+
+    public CustomPage getSubscribing(User user, Pageable pageable) {
+        Page<FolderResponse> folders = folderRepository.findSubscribingFolders(user, pageable);
+        return CustomPage.of(folders);
+    }
+
+    public void subscribeFolder(Long folderId, String userEmail) {
+        User user = userRepository.findUserByEmailAndDelFalse(userEmail).orElseThrow();
+        Folder folder = folderRepository.findById(folderId).orElseThrow();
+
+        if (folderSubscribeRepository.existsByUserAndFolder(user, folder)) {
+            return;
+        }
+
+        folderSubscribeRepository.save(
+            FolderSubscribe.builder()
+                .folder(folder)
+                .user(user)
+                .build()
+        );
     }
 }

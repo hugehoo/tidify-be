@@ -22,6 +22,8 @@ import tidify.tidify.dto.FolderResponse;
 import tidify.tidify.dto.ObjectResponseDto;
 import tidify.tidify.dto.PageResponseDto;
 import tidify.tidify.dto.ResponseDto;
+import tidify.tidify.dto.AuthKey;
+import tidify.tidify.security.JwtTokenProvider;
 import tidify.tidify.service.FolderService;
 
 @RestController
@@ -30,6 +32,7 @@ import tidify.tidify.service.FolderService;
 public class FolderController {
 
     private final FolderService folderService;
+    private final JwtTokenProvider jwtTokenProvider;
 
     @GetMapping
     private ResponseDto getFolders(
@@ -37,6 +40,24 @@ public class FolderController {
         Pageable pageable
     ) {
         CustomPage folders = folderService.getFolders(user, pageable);
+        return new PageResponseDto<>(folders);
+    }
+
+    @GetMapping("/subscribed")
+    private ResponseDto getSubscribedFolders(
+        @AuthenticationPrincipal User user,
+        Pageable pageable
+    ) {
+        CustomPage folders = folderService.getSubscribed(user, pageable);
+        return new PageResponseDto<>(folders);
+    }
+
+    @GetMapping("/subscribing")
+    private ResponseDto getSubscribingFolders(
+        @AuthenticationPrincipal User user,
+        Pageable pageable
+    ) {
+        CustomPage folders = folderService.getSubscribing(user, pageable);
         return new PageResponseDto<>(folders);
     }
 
@@ -58,13 +79,6 @@ public class FolderController {
         CustomPage folderWithBookmarks = folderService.getFolderWithBookmarks(user, folderId,
             pageable);
         return new PageResponseDto<>(folderWithBookmarks);
-    }
-
-    @PostMapping
-    private ResponseDto createFolders(
-        @AuthenticationPrincipal User user, @Valid @RequestBody FolderRequest request) {
-        FolderResponse response = folderService.createFolder(request, user);
-        return new ObjectResponseDto<>(response);
     }
 
     @PatchMapping("/{folderId}")
@@ -91,6 +105,25 @@ public class FolderController {
     ) {
         boolean myFolder = folderService.isMyFolder(folderId, user);
         return new ObjectResponseDto<>(myFolder);
+    }
+
+    @PostMapping
+    private ResponseDto createFolders(
+        @AuthenticationPrincipal User user, @Valid @RequestBody FolderRequest request) {
+        FolderResponse response = folderService.createFolder(request, user);
+        return new ObjectResponseDto<>(response);
+    }
+
+    @PostMapping("/subscribed/{id}")
+    private ResponseDto subscribeFolder(
+        @AuthenticationPrincipal User user,
+        @RequestBody AuthKey request,
+        @PathVariable("id") Long folderId
+    ) {
+
+        String userEmail = jwtTokenProvider.getUserPk(request.getAuthKey(), false);
+        folderService.subscribeFolder(folderId, userEmail);
+        return new ObjectResponseDto<>(null);
     }
 
 }

@@ -11,4 +11,10 @@ public interface FolderRepositoryCustom {
     Page<FolderResponse> findFoldersWithCount(User user, Pageable pageable);
 
     Page<BookmarkResponse> findBookmarksByFolder(User user, Long folderId, Pageable pageable);
+
+    Page<FolderResponse> findSubscribedFolders(User user, Pageable pageable);
+
+    Page<FolderResponse> findSubscribingFolders(User user, Pageable pageable);
+
+    void subscribeFolder(User user, Long folderId);
 }
