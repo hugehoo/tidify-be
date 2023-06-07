@@ -11,6 +11,7 @@ import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
 import lombok.RequiredArgsConstructor;
+import tidify.tidify.domain.Folder;
 import tidify.tidify.domain.QBookmark;
 import tidify.tidify.domain.QFolder;
 import tidify.tidify.domain.QFolderSubscribe;
@@ -92,6 +93,14 @@ public class FolderRepositoryImpl implements FolderRepositoryCustom {
             .and(qFolder.del.isFalse());
 
         return queryFolderResponses(pageable, whereClause);
+    }
+
+    @Override
+    public void subscribeFolder(User user, Long folderId) {
+        Folder folder = query.selectFrom(qFolder).where(qFolder.id.eq(folderId)).fetchOne();
+        query.insert(qFolderSubscribe)
+            .columns(qFolderSubscribe.user, qFolderSubscribe.folder)
+            .values(user, folder).execute();
     }
 
     private Page<FolderResponse> queryFolderResponses(Pageable pageable, BooleanExpression whereClause) {

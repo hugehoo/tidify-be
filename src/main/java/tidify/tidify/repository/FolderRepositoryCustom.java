@@ -15,4 +15,6 @@ public interface FolderRepositoryCustom {
     Page<FolderResponse> findSubscribedFolders(User user, Pageable pageable);
 
     Page<FolderResponse> findSubscribingFolders(User user, Pageable pageable);
+
+    void subscribeFolder(User user, Long folderId);
 }
