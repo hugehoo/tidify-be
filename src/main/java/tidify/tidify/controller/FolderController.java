@@ -40,6 +40,25 @@ public class FolderController {
         return new PageResponseDto<>(folders);
     }
 
+    @GetMapping("/subscribed")
+    private ResponseDto getSubscribedFolders(
+        @AuthenticationPrincipal User user,
+        Pageable pageable
+    ) {
+        CustomPage folders = folderService.getSubscribed(user, pageable);
+        return new PageResponseDto<>(folders);
+    }
+
+
+    @GetMapping("/subscribing")
+    private ResponseDto getSubscribingFolders(
+        @AuthenticationPrincipal User user,
+        Pageable pageable
+    ) {
+        CustomPage folders = folderService.getSubscribing(user, pageable);
+        return new PageResponseDto<>(folders);
+    }
+
     @GetMapping("/{folderId}")
     private ResponseDto getFolders(
         @AuthenticationPrincipal User user,

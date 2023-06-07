@@ -81,4 +81,15 @@ public class FolderService {
             .findFolderByIdAndUser(id, user) // 이미 delete 된 건 못지우게 방어로직 추가
             .orElseThrow(() -> new ResourceNotFoundException(ErrorTypes.FOLDER_NOT_FOUND, id));
     }
+
+    // TODO : 몇명이 구독하고 있는지도 보여주면 좋겠네.
+    public CustomPage getSubscribed(User user, Pageable pageable) {
+        Page<FolderResponse> folders = folderRepository.findSubscribedFolders(user, pageable);
+        return CustomPage.of(folders);
+    }
+
+    public CustomPage getSubscribing(User user, Pageable pageable) {
+        Page<FolderResponse> folders = folderRepository.findSubscribingFolders(user, pageable);
+        return CustomPage.of(folders);
+    }
 }
