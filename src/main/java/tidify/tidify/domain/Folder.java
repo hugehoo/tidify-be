@@ -30,6 +30,10 @@ public class Folder extends BaseEntity {
     @Column(name = "label")
     private LabelType label;
 
+    @Column(name = "shared")
+    @Builder.Default
+    private boolean isShared = false;
+
     public static Folder of(String name, LabelType type, User user) {
         return Folder.builder()
             .name(name)
