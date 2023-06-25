@@ -34,6 +34,10 @@ public class Folder extends BaseEntity {
     @Builder.Default
     private boolean isShared = false;
 
+    @Column(name = "starred")
+    @Builder.Default
+    private boolean isStarred = false;
+
     public static Folder of(String name, LabelType type, User user) {
         return Folder.builder()
             .name(name)
@@ -47,7 +51,12 @@ public class Folder extends BaseEntity {
         this.label = label;
     }
 
+    // TODO : needs Test
     public void delete() {
-        this.setDel(true);
+        super.delete();
+    }
+
+    public void toggleStar() {
+        this.isStarred = !this.isStarred;
     }
 }

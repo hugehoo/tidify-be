@@ -44,7 +44,7 @@ public class Bookmark extends BaseEntity {
     }
 
     public void delete() {
-        this.setDel(true);
+        super.delete();
     }
 
     private String verifyUrl(String url) {
