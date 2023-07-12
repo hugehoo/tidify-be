@@ -23,7 +23,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Getter
-@Setter
+// @Setter
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
 public abstract class BaseEntity {
@@ -54,5 +54,9 @@ public abstract class BaseEntity {
     @PreUpdate
     protected void onUpdate() {
         updateTimestamp = Timestamp.valueOf(LocalDateTime.now());
+    }
+
+    protected void delete() {
+        this.del = true;
     }
 }

@@ -17,13 +17,15 @@ public class BookmarkResponse {
     private String url;
     private String name;
     private Long folderId;
+    private boolean star;
 
     @Builder
-    public BookmarkResponse(Long id, String url, String name, Long folderId) {
+    public BookmarkResponse(Long id, String url, String name, Long folderId, boolean star) {
         this.id = id;
         this.url = url;
         this.name = name;
         this.folderId = folderId;
+        this.star = star;
     }
 
     @QueryProjection
@@ -40,6 +42,7 @@ public class BookmarkResponse {
             .id(bookmark.getId())
             .url(bookmark.getUrl())
             .name(bookmark.getName())
+            .star(bookmark.isStarred())
             .folderId(folderId)
             .build();
     }

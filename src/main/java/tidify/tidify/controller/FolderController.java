@@ -70,6 +70,15 @@ public class FolderController {
         return new ObjectResponseDto<>(folder);
     }
 
+    @PostMapping("/star/{folderId}")
+    private ResponseDto enrollFavorite(
+        @AuthenticationPrincipal User user,
+        @PathVariable("folderId") Long folderId
+    ) {
+        FolderResponse folder = folderService.enrollFavorite(user, folderId);
+        return new ObjectResponseDto<>(folder);
+    }
+
     @GetMapping("/{folderId}/bookmarks")
     private ResponseDto getFolderWithBookmarks(
         @AuthenticationPrincipal User user,

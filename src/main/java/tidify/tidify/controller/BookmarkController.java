@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import lombok.RequiredArgsConstructor;
 import tidify.tidify.domain.User;
 import tidify.tidify.dto.BookmarkRequest;
+import tidify.tidify.dto.BookmarkResponse;
 import tidify.tidify.dto.ObjectResponseDto;
 import tidify.tidify.dto.PageResponseDto;
 import tidify.tidify.dto.ResponseDto;
@@ -54,6 +55,15 @@ public class BookmarkController {
         @Valid @RequestBody BookmarkRequest request
     ) {
         return new ObjectResponseDto<>(bookmarkService.createBookmark(request, user));
+    }
+
+    @PostMapping("/star/{bookmarkId}")
+    private ResponseDto enrollFavorite(
+        @AuthenticationPrincipal User user,
+        @PathVariable("bookmarkId") Long folderId
+    ) {
+        BookmarkResponse bookmark = bookmarkService.enrollFavorite(user, folderId);
+        return new ObjectResponseDto<>(bookmark);
     }
 
     @PatchMapping("/{bookmarkId}")
