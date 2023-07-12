@@ -58,6 +58,18 @@ public class BookmarkService {
         return new BookmarkResponse.BookmarkModifyResponse(bookmark);
     }
 
+    @Transactional // TODO : 동시성 이슈 피하려면(Optimistic Lock)?
+    public BookmarkResponse enrollFavorite(User user, Long bookmarkId) {
+        Bookmark bookmark = bookmarkRepository.findById(bookmarkId)
+            .orElseThrow();
+        bookmark.toggleStar();
+
+        // TODO 줠라 맘에 안들군!
+        Folder folder = bookmark.getFolder();
+        Long folderId = folder == null ? null : folder.getId();
+        return BookmarkResponse.of(bookmark, folderId);
+    }
+
     @Transactional
     public void deleteBookmark(Long id, User user) {
         Bookmark bookmark = getBookmark(id, user);
@@ -93,7 +105,6 @@ public class BookmarkService {
             .user(user)
             .build();
     }
-
 
     private String getNameByOption(BookmarkRequest request, String url) {
         String name = request.getName();

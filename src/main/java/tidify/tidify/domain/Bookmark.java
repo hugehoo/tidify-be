@@ -29,6 +29,9 @@ public class Bookmark extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     private User user;
 
+    @Column(name = "starred")
+    private boolean isStarred = false;
+
     @Builder(builderMethodName = "create")
     public Bookmark(String url, String name, Folder folder, User user) {
         this.url = verifyUrl(url);
@@ -45,6 +48,10 @@ public class Bookmark extends BaseEntity {
 
     public void delete() {
         super.delete();
+    }
+
+    public void toggleStar() {
+        this.isStarred = !this.isStarred;
     }
 
     private String verifyUrl(String url) {
