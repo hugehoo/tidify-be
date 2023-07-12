@@ -1,5 +1,6 @@
 package tidify.tidify.service;
 
+import java.sql.Struct;
 import java.util.Optional;
 
 import org.springframework.data.domain.Page;
@@ -74,6 +75,14 @@ public class FolderService {
     public boolean isMyFolder(Long id, User user) {
         Optional<Folder> optional = folderRepository.findFolderByIdAndUser(id, user);
         return optional.isPresent();
+    }
+
+    @Transactional // TODO : 동시성 이슈 피하려면(Optimistic Lock)?
+    public FolderResponse enrollFavorite(User user, Long folderId) {
+        Folder folder = folderRepository.findFolderByIdAndUser(folderId, user)
+            .orElseThrow();
+        folder.toggleStar();
+        return FolderResponse.of(folder);
     }
 
     private void updateBookmarkAsNoneFolder(User user, Folder folder) {

@@ -6,7 +6,6 @@ import com.querydsl.core.annotations.QueryProjection;
 import lombok.Builder;
 import lombok.Getter;
 import tidify.tidify.domain.Folder;
-import tidify.tidify.domain.LabelType;
 
 @Getter
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -16,24 +15,25 @@ public class FolderResponse {
     private String folderName;
     private String color;
     private Long count;
+    public boolean star;
 
     public static FolderResponse of(Folder folder) {
         return FolderResponse.builder()
             .folderId(folder.getId())
             .folderName(folder.getName())
-            // .label(folder.getLabel())
+            .star(folder.isStarred())
             .color(folder.getLabel().getColor().toUpperCase())
             .build();
     }
 
     @Builder
     public FolderResponse(Long folderId, String folderName,
-        // LabelType label
+        boolean star,
         String color
     ) {
         this.folderId = folderId;
         this.folderName = folderName;
-        // this.label = label;
+        this.star = star;
         this.color = color;
     }
 
