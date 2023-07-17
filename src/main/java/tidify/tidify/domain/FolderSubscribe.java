@@ -26,7 +26,7 @@ import lombok.NoArgsConstructor;
 public class FolderSubscribe extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "user_id") // TODO : Subscriber_id 로 바꾸자 헷갈린다
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)

@@ -88,11 +88,32 @@ public class FolderRepositoryImpl implements FolderRepositoryCustom {
     @Override
     public Page<FolderResponse> findSubscribingFolders(User user, Pageable pageable) {
 
-        BooleanExpression whereClause = qFolder.user.eq(user)
+        BooleanExpression whereCondition = qFolder.user.eq(user)
             .and(qFolder.isShared.isTrue())
             .and(qFolder.del.isFalse());
 
-        return queryFolderResponses(pageable, whereClause);
+        List<FolderResponse> fetch = getFolderResponseForSubscribing(pageable, whereCondition);
+
+        JPAQuery<Long> count = query.select(qFolder.count())
+            .from(qFolder)
+            .where(whereCondition);
+
+        assert (count != null);
+        return PageableExecutionUtils.getPage(fetch, pageable, count::fetchOne);
+    }
+
+    private List<FolderResponse> getFolderResponseForSubscribing(Pageable pageable, BooleanExpression whereCondition) {
+
+        return query.select(new QFolderResponse(qFolder, qFolderSubscribe.count()))
+            .from(qFolder)
+            .where(whereCondition)
+            .leftJoin(qFolderSubscribe)
+            .on(qFolder.eq(qFolderSubscribe.folder))
+            .groupBy(qFolder)
+            .offset(pageable.getOffset())
+            .limit(pageable.getPageSize())
+            .orderBy(qFolder.createTimestamp.desc())
+            .fetch();
     }
 
     @Override
