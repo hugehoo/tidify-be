@@ -32,13 +32,13 @@ public class OAuthController {
         return new ObjectResponseDto<>(authenticate);
     }
 
-    @GetMapping("loginV2")
-    public ObjectResponseDto<Token> loginOauth2V2(@RequestParam SocialType type,
-        HttpServletRequest request) {
-        String code = request.getHeader("Authorization");
-        Token authenticate = userService.getAuthenticate(code, type);
-        return new ObjectResponseDto<>(authenticate);
-    }
+    // @GetMapping("loginV2")
+    // public ObjectResponseDto<Token> loginOauth2V2(@RequestParam SocialType type,
+    //     HttpServletRequest request) {
+    //     String code = request.getHeader("Authorization");
+    //     Token authenticate = userService.getAuthenticate(code, type);
+    //     return new ObjectResponseDto<>(authenticate);
+    // }
 
     @DeleteMapping("withdrawal")
     public ResponseDto userWithdraw(@AuthenticationPrincipal User user) {
