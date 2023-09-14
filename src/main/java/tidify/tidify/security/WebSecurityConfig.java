@@ -33,6 +33,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         web.ignoring()
             .antMatchers("/api")
             .antMatchers("/oauth2/login")
+            .antMatchers("/oauth2/loginV2")
             .antMatchers("/actuator/**")
             .antMatchers("/root");
     }
@@ -44,6 +45,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
             .and()
             .authorizeRequests()
             .antMatchers("/oauth2/login").permitAll()
+            .antMatchers("/oauth2/loginV2").permitAll()
             .antMatchers("/admin/**").hasRole("ADMIN")
             .antMatchers("/user/**").hasRole("USER")
             .antMatchers("/app/label").permitAll()
