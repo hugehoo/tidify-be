@@ -218,7 +218,7 @@ public class FolderAcceptanceTest {
         );
     }
 
-    @AfterEach
+    // @AfterEach
     void ClearDB() {
         folderRepository.deleteByUserId(USER_ID);
         bookmarkRepository.deleteByUserId(USER_ID);

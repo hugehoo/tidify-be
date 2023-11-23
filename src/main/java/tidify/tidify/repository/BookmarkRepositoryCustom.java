@@ -8,5 +8,6 @@ import tidify.tidify.dto.BookmarkResponse;
 
 public interface BookmarkRepositoryCustom {
     Page<BookmarkResponse> findBookmarksWithFolderId(User user, Pageable pageable);
+    Page<BookmarkResponse> findStarBookmarks(User user, Pageable pageable);
     Page<BookmarkResponse> searchBookmarks(User user, String searchKeyword, Pageable pageable);
 }

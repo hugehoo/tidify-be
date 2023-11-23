@@ -264,7 +264,7 @@ public class BookmarkAcceptanceTest {
         assertEquals(URL_NAVER, 수정된_북마크_이름);
     }
 
-    @AfterEach
+    // @AfterEach
     void ClearDB() {
         folderRepository.deleteByUserId(USER_ID);
         bookmarkRepository.deleteByUserId(USER_ID);

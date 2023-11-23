@@ -49,6 +49,13 @@ public class BookmarkController {
         return new PageResponseDto<>(bookmarkService.searchBookmarks(user, keyword, pageable));
     }
 
+    @GetMapping("/star")
+    private ResponseDto getStarBookmark(
+        @AuthenticationPrincipal User user, Pageable pageable
+    ) {
+        return new PageResponseDto<>(bookmarkService.getStarBookmarks(user, pageable));
+    }
+
     @PostMapping
     private ResponseDto createBookmark(
         @AuthenticationPrincipal User user,
