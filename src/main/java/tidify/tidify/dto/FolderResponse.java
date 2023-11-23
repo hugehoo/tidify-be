@@ -15,25 +15,21 @@ public class FolderResponse {
     private String folderName;
     private String color;
     private Long count;
-    public boolean star;
 
     public static FolderResponse of(Folder folder) {
         return FolderResponse.builder()
             .folderId(folder.getId())
             .folderName(folder.getName())
-            .star(folder.isStarred())
             .color(folder.getLabel().getColor().toUpperCase())
             .build();
     }
 
     @Builder
     public FolderResponse(Long folderId, String folderName,
-        boolean star,
         String color
     ) {
         this.folderId = folderId;
         this.folderName = folderName;
-        this.star = star;
         this.color = color;
     }
 
@@ -41,7 +37,6 @@ public class FolderResponse {
     public FolderResponse(Folder folder, Long count) {
         this.folderId = folder.getId();
         this.folderName = folder.getName();
-        // this.label = folder.getLabel();
         this.color = folder.getLabel().getColor().toUpperCase();
         this.count = count;
     }
