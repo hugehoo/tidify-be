@@ -33,6 +33,7 @@ public class BookmarkResponse {
         this.id = bookmark.getId();
         this.url= bookmark.getUrl();
         this.name = bookmark.getName();
+        this.star = bookmark.isStarred();
         this.folderId = folderId;
     }
 

@@ -33,9 +33,9 @@ public class BookmarkRepositoryImpl implements BookmarkRepositoryCustom {
         List<BookmarkResponse> fetch = query
             .select(new QBookmarkResponse(qBookmark, qFolder.id))
             .from(qBookmark)
-            .where(condition(user))
             .leftJoin(qFolder)
             .on(qFolder.eq(qBookmark.folder))
+            .where(condition(user))
             .offset(pageable.getOffset())
             .limit(pageable.getPageSize())
             .orderBy(qBookmark.createTimestamp.desc())
@@ -44,6 +44,29 @@ public class BookmarkRepositoryImpl implements BookmarkRepositoryCustom {
         JPAQuery<Long> count = query.select(qBookmark.count())
             .from(qBookmark)
             .where(condition(user));
+
+        return PageableExecutionUtils.getPage(fetch, pageable, count::fetchOne);
+    }
+
+    @Override
+    public Page<BookmarkResponse> findStarBookmarks(User user, Pageable pageable) {
+
+        List<BookmarkResponse> fetch = query
+            .select(new QBookmarkResponse(qBookmark, qFolder.id))
+            .from(qBookmark)
+            .leftJoin(qFolder)
+            .on(qFolder.eq(qBookmark.folder))
+            .where(condition(user))
+            .where(qBookmark.isStarred.isTrue())
+            .offset(pageable.getOffset())
+            .limit(pageable.getPageSize())
+            .orderBy(qBookmark.createTimestamp.desc())
+            .fetch();
+
+        JPAQuery<Long> count = query.select(qBookmark.count())
+            .from(qBookmark)
+            .where(condition(user))
+            .where(qBookmark.isStarred.isTrue());
 
         return PageableExecutionUtils.getPage(fetch, pageable, count::fetchOne);
     }

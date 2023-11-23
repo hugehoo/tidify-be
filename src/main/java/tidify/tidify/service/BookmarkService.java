@@ -113,4 +113,10 @@ public class BookmarkService {
         }
         return name;
     }
+
+    @Transactional(readOnly = true)
+    public CustomPage getStarBookmarks(User user, Pageable pageable) {
+        Page<BookmarkResponse> bookmarks = bookmarkRepository.findStarBookmarks(user, pageable);
+        return CustomPage.of(bookmarks);
+    }
 }
