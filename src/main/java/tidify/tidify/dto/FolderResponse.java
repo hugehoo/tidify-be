@@ -20,7 +20,7 @@ public class FolderResponse {
         return FolderResponse.builder()
             .folderId(folder.getId())
             .folderName(folder.getName())
-            .color(folder.getLabel().getColor().toUpperCase())
+            .color(folder.getLabel().name().toUpperCase())
             .build();
     }
 
@@ -37,7 +37,7 @@ public class FolderResponse {
     public FolderResponse(Folder folder, Long count) {
         this.folderId = folder.getId();
         this.folderName = folder.getName();
-        this.color = folder.getLabel().getColor().toUpperCase();
+        this.color = folder.getLabel().name().toUpperCase();
         this.count = count;
     }
 }
