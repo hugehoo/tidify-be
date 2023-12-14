@@ -129,8 +129,7 @@ public class FolderRepositoryImpl implements FolderRepositoryCustom {
 
         JPAQuery<Long> count = query.select(qFolder.count())
             .from(qFolder)
-            .where(whereClause)
-            .where(qFolder.del.isFalse());
+            .where(whereClause);
 
         assert (count != null);
         return PageableExecutionUtils.getPage(fetch, pageable, count::fetchOne);
