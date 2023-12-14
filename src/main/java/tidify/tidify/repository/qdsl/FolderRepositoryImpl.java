@@ -139,6 +139,7 @@ public class FolderRepositoryImpl implements FolderRepositoryCustom {
         return query.select(new QFolderResponse(qFolder, qBookmark.count()))
             .from(qFolder)
             .where(whereClause)
+            .where(qBookmark.del.isFalse())
             .leftJoin(qBookmark).on(qBookmark.folder.eq(qFolder))
             .groupBy(qFolder)
             .offset(pageable.getOffset())
