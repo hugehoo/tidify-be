@@ -8,6 +8,7 @@ public enum LabelType {
     ASHBLUE,
     SKYBLUE,
     BLUE,
+    BLACK,
     PURPLE,
     GREEN,
     YELLOW,
