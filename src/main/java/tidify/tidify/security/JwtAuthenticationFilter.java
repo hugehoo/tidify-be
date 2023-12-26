@@ -53,7 +53,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private void rotateTokens(HttpServletRequest request, HttpServletResponse response, String refreshToken) {
         Map<String, String> map = new HashMap<>();
-        String userPk = jwtTokenProvider.getUserPk(refreshToken, true); // 여기서 지속적으로 터지는데,
+        String userPk = jwtTokenProvider.getUserPk(refreshToken, true);
         reIssueBothTokens(userPk, map);
         setHeaders(response, map);
         setAuthentication(map.get(X_AUTH_TOKEN));
