@@ -48,7 +48,6 @@ public class BookmarkService {
 
     @Transactional
     public BookmarkResponse createBookmark(BookmarkRequest request, User user) {
-        String ogImage = getOgImage(request);
         Bookmark bookmark = buildBookmark(request, user);
         bookmarkRepository.save(bookmark);
         return BookmarkResponse.of(bookmark, request.getFolderId());
@@ -129,29 +128,4 @@ public class BookmarkService {
         return CustomPage.of(bookmarks);
     }
 
-    private String getOgImage(BookmarkRequest request) {
-        try {
-            String url = urlWithProtocol(request.getUrl());
-            Element ogTag = Jsoup.connect(url)
-                .get()
-                .select("meta[property=og:image]")
-                .first();
-            if (Objects.nonNull(ogTag)) {
-                return ogTag.attr("content");
-            }
-            return "";
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private String urlWithProtocol(String originUrl) {
-        String HTTP = "http://";
-        String HTTPS = "https://";
-        if (originUrl.startsWith(HTTP) || originUrl.startsWith(HTTPS)) {
-            return originUrl;
-        }
-
-        return String.format("%S%S", HTTPS, originUrl);
-    }
 }
