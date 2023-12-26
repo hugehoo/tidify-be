@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonFormat.Shape;
 @JsonFormat(shape = Shape.OBJECT)
 public enum LabelType {
     ASHBLUE,
+    SKYBLUE,
     BLUE,
     PURPLE,
     GREEN,
