@@ -1,5 +1,11 @@
 package tidify.tidify.service;
 
+import java.io.IOException;
+
+import org.jsoup.Connection;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.select.Elements;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -40,6 +46,18 @@ public class BookmarkService {
 
     @Transactional
     public BookmarkResponse createBookmark(BookmarkRequest request, User user) {
+
+        String url = request.getUrl();
+        Connection connect = Jsoup.connect(url);
+        Document document = null;
+        try {
+            document = connect.get();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        Elements ogImageTag = document.select("meta[property=og:image]");
+        String content = ogImageTag.first().attr("content");
+        System.out.println(content);
         Bookmark bookmark = buildBookmark(request, user);
         bookmarkRepository.save(bookmark);
         return BookmarkResponse.of(bookmark, request.getFolderId());
@@ -118,5 +136,15 @@ public class BookmarkService {
     public CustomPage getStarBookmarks(User user, Pageable pageable) {
         Page<BookmarkResponse> bookmarks = bookmarkRepository.findStarBookmarks(user, pageable);
         return CustomPage.of(bookmarks);
+    }
+
+    private String urlWithProtocol(String originUrl) {
+        String HTTP = "http://";
+        String HTTPS = "https://";
+        if (originUrl.startsWith(HTTP) || originUrl.startsWith(HTTPS)) {
+            return originUrl;
+        }
+
+        return String.format("%S%S", HTTP, originUrl);
     }
 }
