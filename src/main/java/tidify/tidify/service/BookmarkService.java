@@ -1,10 +1,12 @@
 package tidify.tidify.service;
 
 import java.io.IOException;
+import java.util.Objects;
 
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -46,18 +48,7 @@ public class BookmarkService {
 
     @Transactional
     public BookmarkResponse createBookmark(BookmarkRequest request, User user) {
-
-        String url = request.getUrl();
-        Connection connect = Jsoup.connect(url);
-        Document document = null;
-        try {
-            document = connect.get();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        Elements ogImageTag = document.select("meta[property=og:image]");
-        String content = ogImageTag.first().attr("content");
-        System.out.println(content);
+        String ogImage = getOgImage(request);
         Bookmark bookmark = buildBookmark(request, user);
         bookmarkRepository.save(bookmark);
         return BookmarkResponse.of(bookmark, request.getFolderId());
@@ -138,6 +129,22 @@ public class BookmarkService {
         return CustomPage.of(bookmarks);
     }
 
+    private String getOgImage(BookmarkRequest request) {
+        try {
+            String url = urlWithProtocol(request.getUrl());
+            Element ogTag = Jsoup.connect(url)
+                .get()
+                .select("meta[property=og:image]")
+                .first();
+            if (Objects.nonNull(ogTag)) {
+                return ogTag.attr("content");
+            }
+            return "";
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     private String urlWithProtocol(String originUrl) {
         String HTTP = "http://";
         String HTTPS = "https://";
@@ -145,6 +152,6 @@ public class BookmarkService {
             return originUrl;
         }
 
-        return String.format("%S%S", HTTP, originUrl);
+        return String.format("%S%S", HTTPS, originUrl);
     }
 }
