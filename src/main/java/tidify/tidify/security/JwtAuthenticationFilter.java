@@ -18,15 +18,12 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import io.jsonwebtoken.MalformedJwtException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import tidify.tidify.redis.RedisTokenService;
 
 @Slf4j
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtTokenProvider jwtTokenProvider;
-
-    private final RedisTokenService redisTokenService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
@@ -40,9 +37,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         } else {
             try {
                 rotateTokens(request, response, refreshToken);
-            } catch (MalformedJwtException e) {
+            } catch (MalformedJwtException | IllegalArgumentException exception) {
                 log.info("[Request URI] {} {}", request.getMethod(), request.getRequestURI());
                 log.info("[Request Principal] {} ", request.getUserPrincipal());
+                log.error("[Error] {} ", exception.getMessage());
                 return;
             }
         }
@@ -52,7 +50,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private void rotateTokens(HttpServletRequest request, HttpServletResponse response, String refreshToken) {
         Map<String, String> map = new HashMap<>();
-        String userPk = jwtTokenProvider.getUserPk(refreshToken, true); // 여기서 지속적으로 터지는데,
+        String userPk = jwtTokenProvider.getUserPk(refreshToken, true);
         reIssueBothTokens(userPk, map);
         setHeaders(response, map);
         setAuthentication(map.get(X_AUTH_TOKEN));

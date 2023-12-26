@@ -78,7 +78,6 @@ public class JwtTokenProvider {
     public String getUserPk(String token, boolean isRefreshToken) {
         String signingKey = isRefreshToken ? refreshSecretKey : secretKey;
         try {
-            Claims claims = Jwts.parser().setSigningKey(signingKey).parseClaimsJws(token).getBody();
             return Jwts.parser().setSigningKey(signingKey).parseClaimsJws(token).getBody().getSubject();
         } catch (ExpiredJwtException e) {
             Claims claims = e.getClaims();

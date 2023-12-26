@@ -42,6 +42,14 @@ public class GlobalExceptionHandler {
 
     }
 
+    @ExceptionHandler(IllegalArgumentException.class)
+    public final ResponseEntity<ExceptionDto> illegalArgumentException(IllegalArgumentException exception) {
+        ExceptionDto response = ExceptionDto.ofFailure(Integer.toString(HttpStatus.BAD_REQUEST.value()),
+            exception.getMessage());
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+
+    }
+
     // @ExceptionHandler(LogoutException.class)
     // public final ResponseEntity<?> logout(LogoutException exception) {
     //     // ExceptionDto exceptionDto = ExceptionDto.builder()

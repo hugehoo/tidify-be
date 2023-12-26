@@ -12,7 +12,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import lombok.RequiredArgsConstructor;
-import tidify.tidify.redis.RedisTokenService;
 
 @Configuration
 @EnableWebSecurity
@@ -20,8 +19,6 @@ import tidify.tidify.redis.RedisTokenService;
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     private final JwtTokenProvider jwtTokenProvider;
-    private final RedisTokenService redisTokenService;
-
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -53,7 +50,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
             .antMatchers("/oauth2/withdrawal").authenticated()
             .antMatchers("/app/bookmarks/**").authenticated()
             .and()
-            .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider, redisTokenService), UsernamePasswordAuthenticationFilter.class);
+            .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class);
     }
 
     @Bean

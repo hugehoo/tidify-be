@@ -10,8 +10,6 @@ import tidify.tidify.domain.SocialType;
 import tidify.tidify.domain.User;
 import tidify.tidify.dto.UserDto;
 import tidify.tidify.oauth.SocialLoginFactory;
-import tidify.tidify.redis.RedisTokenRepository;
-import tidify.tidify.redis.RefreshToken;
 import tidify.tidify.repository.UserRepository;
 import tidify.tidify.security.JwtTokenProvider;
 import tidify.tidify.security.Token;
@@ -24,8 +22,6 @@ public class UserService {
     private final JwtTokenProvider jwtTokenProvider;
 
     private final PasswordEncoder passwordEncoder;
-
-    private final RedisTokenRepository redisTokenRepository;
 
     private final SocialLoginFactory socialLoginFactory;
 
@@ -44,9 +40,6 @@ public class UserService {
         return jwtTokenProvider.createToken(email, type);
     }
 
-    private void saveTokenInRedis(Token token) {
-        redisTokenRepository.save(RefreshToken.of(token.getKey(), token.getRefreshToken()));
-    }
 
     private void saveOrUpdateUser(Token token) {
         String userEmail = jwtTokenProvider.getUserPk(token.getAccessToken(), false);
