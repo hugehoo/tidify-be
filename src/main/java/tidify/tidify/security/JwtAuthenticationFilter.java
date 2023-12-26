@@ -40,9 +40,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         } else {
             try {
                 rotateTokens(request, response, refreshToken);
-            } catch (MalformedJwtException e) {
+            } catch (MalformedJwtException | IllegalArgumentException exception) {
                 log.info("[Request URI] {} {}", request.getMethod(), request.getRequestURI());
                 log.info("[Request Principal] {} ", request.getUserPrincipal());
+                log.error("[Error] {} ", exception.getMessage());
                 return;
             }
         }
