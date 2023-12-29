@@ -1,15 +1,21 @@
 package tidify.tidify.domain;
 
+import java.util.Objects;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Element;
+
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import tidify.tidify.dto.BookmarkRequest;
 
 @Getter
 @Entity(name = "bookmark")
@@ -18,6 +24,9 @@ public class Bookmark extends BaseEntity {
 
     @Column(name = "url")
     private String url;
+
+    @Column(name = "og_image")
+    private String ogImage;
 
     @Column(name = "name")
     private String name;
@@ -35,6 +44,7 @@ public class Bookmark extends BaseEntity {
     @Builder(builderMethodName = "create")
     public Bookmark(String url, String name, Folder folder, User user) {
         this.url = verifyUrl(url);
+        this.ogImage = getOgImage(url);
         this.name = name;
         this.folder = folder;
         this.user = user;
@@ -62,7 +72,22 @@ public class Bookmark extends BaseEntity {
         if (url.startsWith(HTTP) || url.startsWith(HTTPS)) {
             return url;
         }
-        return String.format("https://%s", url);
+        return String.format("%s%s", HTTPS, url);
+    }
+
+    private String getOgImage(String url) {
+        try {
+            Element ogTag = Jsoup.connect(verifyUrl(url))
+                .get()
+                .select("meta[property=og:image]")
+                .first();
+            if (Objects.nonNull(ogTag)) {
+                return ogTag.attr("content");
+            }
+            return "";
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
 }

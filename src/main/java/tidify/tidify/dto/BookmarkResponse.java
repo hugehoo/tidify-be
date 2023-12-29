@@ -17,6 +17,7 @@ public class BookmarkResponse {
     private String url;
     private String name;
     private Long folderId;
+    private String ogImage;
     private boolean star;
 
     @Builder
@@ -34,6 +35,7 @@ public class BookmarkResponse {
         this.url= bookmark.getUrl();
         this.name = bookmark.getName();
         this.star = bookmark.isStarred();
+        this.ogImage = bookmark.getOgImage();
         this.folderId = folderId;
     }
 

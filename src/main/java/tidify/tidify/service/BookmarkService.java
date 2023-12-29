@@ -1,5 +1,13 @@
 package tidify.tidify.service;
 
+import java.io.IOException;
+import java.util.Objects;
+
+import org.jsoup.Connection;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -119,4 +127,5 @@ public class BookmarkService {
         Page<BookmarkResponse> bookmarks = bookmarkRepository.findStarBookmarks(user, pageable);
         return CustomPage.of(bookmarks);
     }
+
 }

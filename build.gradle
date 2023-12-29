@@ -101,6 +101,9 @@ dependencies {
     // actuator
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
 
+    // jsoup
+    implementation 'org.jsoup:jsoup:1.15.3'
+
     // prometheus
     runtimeOnly 'io.micrometer:micrometer-registry-prometheus'
 }
