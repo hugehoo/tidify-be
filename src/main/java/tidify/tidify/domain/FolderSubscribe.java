@@ -26,4 +26,7 @@ public class FolderSubscribe extends BaseEntity {
     @JoinColumn(name = "folder_id")
     private Folder folder;
 
+    public void unsubscribe() {
+        super.delete();
+    }
 }

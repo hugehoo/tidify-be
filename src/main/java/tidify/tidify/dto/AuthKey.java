@@ -13,7 +13,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class AuthKey {
 
-    @NotBlank
     private String authKey;
 
 }

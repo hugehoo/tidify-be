@@ -124,6 +124,18 @@ public class FolderRepositoryImpl implements FolderRepositoryCustom {
             .values(user, folder).execute();
     }
 
+    @Override
+    public boolean suspendSharing(Long folderId) {
+        // 공유 중지하면, 구독자들은 못보게 해야한다 -> del 처리?
+        long execute = query.update(qFolderSubscribe)
+            .set(qFolderSubscribe.del, true)
+            .where(qFolderSubscribe.folder.id.eq(folderId))
+            .execute();
+
+        return execute != 0;
+    }
+
+
     private Page<FolderResponse> queryFolderResponses(Pageable pageable, BooleanExpression whereClause) {
         List<FolderResponse> fetch = getFolderResponse(pageable, whereClause);
 
@@ -154,4 +166,6 @@ public class FolderRepositoryImpl implements FolderRepositoryCustom {
             .where(qBookmark.folder.id.eq(folderId))
             .execute();
     }
+
+
 }

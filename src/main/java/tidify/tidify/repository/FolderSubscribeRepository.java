@@ -1,5 +1,6 @@
 package tidify.tidify.repository;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -14,5 +15,8 @@ public interface FolderSubscribeRepository extends JpaRepository<FolderSubscribe
 
     boolean existsByUserAndFolder(User user, Folder folder);
 
+    Optional<FolderSubscribe> findByUserAndFolder(User user, Folder folder);
+
+    List<FolderSubscribe> findByFolder(Folder folder);
 }
 

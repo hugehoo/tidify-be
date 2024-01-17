@@ -1,6 +1,6 @@
 package tidify.tidify.service;
 
-import java.sql.Struct;
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.domain.Page;
@@ -120,5 +120,33 @@ public class FolderService {
                 .user(user)
                 .build()
         );
+    }
+
+    @Transactional
+    public FolderSubscribe unSubscribeFolder(Long folderId, String userEmail) {
+        User user = userRepository.findUserByEmailAndDelFalse(userEmail)
+            .orElseThrow();
+        Folder folder = folderRepository.findById(folderId)
+            .orElseThrow();
+
+        FolderSubscribe folderSubscribe = folderSubscribeRepository.findByUserAndFolder(user, folder)
+            .orElseThrow();
+
+        folderSubscribe.unsubscribe();
+        return folderSubscribe;
+    }
+
+    @Transactional
+    public boolean suspendSharing(User user, Long folderId) {
+        Folder folder = folderRepository.findById(folderId).orElseThrow();
+        folder.unShare();
+        // 해당 폴더를 구독하는 사람들은 보지 못하게 한다.
+        // folderSubscribeRepository.findBy()
+        boolean result = folderRepository.suspendSharing(folderId);
+        return result;
+        // List<FolderSubscribe> byFolder = folderSubscribeRepository.findByFolder(folder);
+        // for (FolderSubscribe folderSubscribe : byFolder) {
+        //
+        // }
     }
 }

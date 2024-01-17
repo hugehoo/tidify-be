@@ -17,4 +17,6 @@ public interface FolderRepositoryCustom {
     Page<FolderResponse> findSubscribingFolders(User user, Pageable pageable);
 
     void subscribeFolder(User user, Long folderId);
+
+    boolean suspendSharing(Long folderId);
 }

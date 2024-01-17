@@ -59,4 +59,8 @@ public class Folder extends BaseEntity {
     public void toggleStar() {
         this.isStarred = !this.isStarred;
     }
+
+    public void unShare() {
+        this.isShared = false;
+    }
 }
