@@ -125,32 +125,34 @@ public class FolderController {
         return new ObjectResponseDto<>(response);
     }
 
+
+    @Description("폴더 구독")
     @PostMapping("/subscribed/{id}")
     private ResponseDto subscribeFolder(
         @AuthenticationPrincipal User user,
-        @Valid @RequestBody AuthKey request,
+        // @Valid @RequestBody AuthKey request,
         @PathVariable("id") Long folderId
     ) {
 
-        String userEmail = jwtTokenProvider.getUserPk(request.getAuthKey(), false);
-        folderService.subscribeFolder(folderId, userEmail);
+        // String userEmail = jwtTokenProvider.getUserPk(request.getAuthKey(), false);
+        folderService.subscribeFolder(folderId, user.getUserEmail());
         return new ObjectResponseDto<>(null);
     }
 
 
-    @Description("구독자 입장 - 구독 취소")
+    @Description("폴더 구독 취소")
     @PostMapping("/un-subscribed/{id}")
     private ResponseDto unSubscribeFolder(
         @AuthenticationPrincipal User user,
-        @RequestBody AuthKey request,
+        // @RequestBody AuthKey request,
         @PathVariable("id") Long folderId
     ) {
-        String userEmail = jwtTokenProvider.getUserPk(request.getAuthKey(), false);
-        folderService.unSubscribeFolder(folderId, userEmail);
+        // String userEmail = jwtTokenProvider.getUserPk(request.getAuthKey(), false);
+        folderService.unSubscribeFolder(folderId, user.getUserEmail());
         return new ObjectResponseDto<>(null);
     }
 
-    @Description("공유자 입장 - 공유 중지")
+    @Description("공유자 입장 - 유저 폴더 공유 중지")
     @PostMapping("/{folderId}/share-suspending")
     private ResponseDto suspendSharing(
         @AuthenticationPrincipal User user,

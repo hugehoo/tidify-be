@@ -140,13 +140,6 @@ public class FolderService {
     public boolean suspendSharing(User user, Long folderId) {
         Folder folder = folderRepository.findById(folderId).orElseThrow();
         folder.unShare();
-        // 해당 폴더를 구독하는 사람들은 보지 못하게 한다.
-        // folderSubscribeRepository.findBy()
-        boolean result = folderRepository.suspendSharing(folderId);
-        return result;
-        // List<FolderSubscribe> byFolder = folderSubscribeRepository.findByFolder(folder);
-        // for (FolderSubscribe folderSubscribe : byFolder) {
-        //
-        // }
+        return folderRepository.suspendSharing(folderId);
     }
 }
