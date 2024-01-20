@@ -2,6 +2,7 @@ package tidify.tidify.controller;
 
 import javax.validation.Valid;
 
+import org.springframework.context.annotation.Description;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
+import tidify.tidify.domain.FolderSubscribe;
 import tidify.tidify.domain.User;
 import tidify.tidify.dto.CustomPage;
 import tidify.tidify.dto.FolderRequest;
@@ -123,16 +125,40 @@ public class FolderController {
         return new ObjectResponseDto<>(response);
     }
 
+
+    @Description("폴더 구독")
     @PostMapping("/subscribed/{id}")
     private ResponseDto subscribeFolder(
         @AuthenticationPrincipal User user,
-        @RequestBody AuthKey request,
+        // @Valid @RequestBody AuthKey request,
         @PathVariable("id") Long folderId
     ) {
 
-        String userEmail = jwtTokenProvider.getUserPk(request.getAuthKey(), false);
-        folderService.subscribeFolder(folderId, userEmail);
+        // String userEmail = jwtTokenProvider.getUserPk(request.getAuthKey(), false);
+        folderService.subscribeFolder(folderId, user.getUserEmail());
         return new ObjectResponseDto<>(null);
     }
 
+
+    @Description("폴더 구독 취소")
+    @PostMapping("/un-subscribed/{id}")
+    private ResponseDto unSubscribeFolder(
+        @AuthenticationPrincipal User user,
+        // @RequestBody AuthKey request,
+        @PathVariable("id") Long folderId
+    ) {
+        // String userEmail = jwtTokenProvider.getUserPk(request.getAuthKey(), false);
+        folderService.unSubscribeFolder(folderId, user.getUserEmail());
+        return new ObjectResponseDto<>(null);
+    }
+
+    @Description("공유자 입장 - 유저 폴더 공유 중지")
+    @PostMapping("/{folderId}/share-suspending")
+    private ResponseDto suspendSharing(
+        @AuthenticationPrincipal User user,
+        @PathVariable(value = "folderId") Long folderId) {
+
+        boolean result = folderService.suspendSharing(user, folderId);
+        return new ObjectResponseDto<>(result);
+    }
 }
