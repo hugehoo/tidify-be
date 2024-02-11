@@ -1,10 +1,6 @@
 package tidify.tidify.dto;
 
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-
-import org.hibernate.validator.constraints.Length;
-
+import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 
 

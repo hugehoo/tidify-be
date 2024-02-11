@@ -2,7 +2,7 @@ package tidify.tidify.acceptance;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.springframework.restdocs.restassured3.RestAssuredRestDocumentation.*;
+import static org.springframework.restdocs.restassured.RestAssuredRestDocumentation.*;
 import static tidify.tidify.acceptance.TDFSteps.*;
 import static tidify.tidify.common.SecretConstants.*;
 import static tidify.tidify.utils.TestConstants.*;
@@ -13,7 +13,6 @@ import java.util.Objects;
 import java.util.Random;
 import java.util.stream.Stream;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
