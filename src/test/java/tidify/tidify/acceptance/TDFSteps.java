@@ -180,7 +180,7 @@ public class TDFSteps {
                 "Content-Type", ContentType.JSON,
                 "Accept", ContentType.JSON)
             .body(body)
-            .when().post("/app/bookmarks/")
+            .when().post("/app/bookmarks")
             .then().log().all().extract();
     }
 
