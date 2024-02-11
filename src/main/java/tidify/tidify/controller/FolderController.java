@@ -1,6 +1,6 @@
 package tidify.tidify.controller;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 
 import org.springframework.context.annotation.Description;
 import org.springframework.data.domain.Pageable;

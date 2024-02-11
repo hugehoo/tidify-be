@@ -1,6 +1,6 @@
 package tidify.tidify.common;
 
-import javax.validation.constraints.Min;
+import jakarta.validation.constraints.Min;
 
 public class Constants {
 

@@ -2,21 +2,27 @@ package tidify.tidify.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.servlet.util.matcher.MvcRequestMatcher;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.web.servlet.handler.HandlerMappingIntrospector;
 
 import lombok.RequiredArgsConstructor;
 
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
-public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
+public class WebSecurityConfig
+    // extends WebSecurityConfigurerAdapter
+{
 
     private final JwtTokenProvider jwtTokenProvider;
 
@@ -25,38 +31,34 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         return PasswordEncoderFactories.createDelegatingPasswordEncoder();
     }
 
-    @Override
-    public void configure(WebSecurity web) throws Exception {
-        web.ignoring()
-            .antMatchers("/api")
-            .antMatchers("/oauth2/login")
-            .antMatchers("/oauth2/loginV2")
-            .antMatchers("/actuator/**")
-            .antMatchers("/root");
-    }
 
-    @Override
-    protected void configure(HttpSecurity http) throws Exception {
-        http.csrf().disable();
-        http.httpBasic()
-            .and()
-            .authorizeRequests()
-            .antMatchers("/oauth2/login").permitAll()
-            .antMatchers("/oauth2/loginV2").permitAll()
-            .antMatchers("/admin/**").hasRole("ADMIN")
-            .antMatchers("/user/**").hasRole("USER")
-            .antMatchers("/app/label").permitAll()
-            .antMatchers("/app/folders/**").authenticated()
-            .antMatchers("/oauth2/withdrawal").authenticated()
-            .antMatchers("/app/bookmarks/**").authenticated()
-            .and()
-            .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class);
+    @Bean
+    public WebSecurityCustomizer webSecurityCustomizer() {
+        return (web) -> web.ignoring().
+            requestMatchers(new AntPathRequestMatcher("/api"))
+            .requestMatchers(new AntPathRequestMatcher( "/oauth2/login"))
+            .requestMatchers(new AntPathRequestMatcher( "/oauth2/loginV2"))
+            .requestMatchers(new AntPathRequestMatcher( "/actuator/**"))
+            .requestMatchers(new AntPathRequestMatcher( "/root"));
     }
 
     @Bean
-    @Override
-    public AuthenticationManager authenticationManagerBean() throws Exception {
-        return super.authenticationManagerBean();
+    protected SecurityFilterChain filterChain(HttpSecurity http, HandlerMappingIntrospector introspector) throws Exception {
+        http.csrf(AbstractHttpConfigurer::disable);
+        http.authorizeHttpRequests(authorize ->
+                authorize.requestMatchers(new MvcRequestMatcher(introspector, "/**")).permitAll()
+                    .requestMatchers(new MvcRequestMatcher(introspector, "/oauth2/login")).permitAll()
+                    .requestMatchers(new MvcRequestMatcher(introspector, "/oauth2/loginV2")).permitAll()
+                    .requestMatchers(new MvcRequestMatcher(introspector, "/admin/**")).permitAll()
+                    .requestMatchers(new MvcRequestMatcher(introspector, "/user/**")).permitAll()
+                    .requestMatchers(new MvcRequestMatcher(introspector, "/app/label")).permitAll()
+                    .requestMatchers(new MvcRequestMatcher(introspector, "/app/folders")).permitAll()
+                    .requestMatchers(new MvcRequestMatcher(introspector, "/oauth2/withdrawal")).permitAll()
+                    .requestMatchers(new MvcRequestMatcher(introspector, "/app/bookmarks/**")).permitAll()
+                    .anyRequest()
+                    .authenticated())
+            .httpBasic(Customizer.withDefaults());
+        return http.build();
     }
 
 }
