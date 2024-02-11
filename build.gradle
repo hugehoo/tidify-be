@@ -89,8 +89,8 @@ dependencies {
     implementation group: 'org.bouncycastle', name: 'bcpkix-jdk15on', version: '1.50'
 
     // redis
-    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
-    implementation 'org.springframework.boot:spring-boot-starter-cache'
+//    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+//    implementation 'org.springframework.boot:spring-boot-starter-cache'
 
     // rest-docs
     asciidoctorExtensions 'org.springframework.restdocs:spring-restdocs-asciidoctor'
