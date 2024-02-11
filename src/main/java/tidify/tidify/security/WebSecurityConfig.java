@@ -57,7 +57,8 @@ public class WebSecurityConfig
                     .requestMatchers(new MvcRequestMatcher(introspector, "/app/bookmarks/**")).permitAll()
                     .anyRequest()
                     .authenticated())
-            .httpBasic(Customizer.withDefaults());
+            .httpBasic(Customizer.withDefaults())
+            .apply(new JwtSecurityConfig(jwtTokenProvider));
         return http.build();
     }
 

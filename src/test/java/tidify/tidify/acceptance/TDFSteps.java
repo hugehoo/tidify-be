@@ -1,7 +1,7 @@
 package tidify.tidify.acceptance;
 
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.*;
-import static org.springframework.restdocs.restassured3.RestAssuredRestDocumentation.*;
+import static org.springframework.restdocs.restassured.RestAssuredRestDocumentation.*;
 import static tidify.tidify.common.Constants.*;
 import static tidify.tidify.common.Constants.REFRESH_TOKEN;
 import static tidify.tidify.common.SecretConstants.*;
@@ -9,7 +9,7 @@ import static tidify.tidify.common.SecretConstants.*;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.springframework.restdocs.restassured3.RestDocumentationFilter;
+import org.springframework.restdocs.restassured.RestDocumentationFilter;
 
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;

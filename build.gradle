@@ -84,18 +84,21 @@ dependencies {
     implementation group: 'io.jsonwebtoken', name: 'jjwt-api', version: '0.11.2'
     runtimeOnly group: 'io.jsonwebtoken', name: 'jjwt-impl', version: '0.11.2'
     runtimeOnly group: 'io.jsonwebtoken', name: 'jjwt-jackson', version: '0.11.2'
+
+    // com.sun.xml.bind
+    implementation 'com.sun.xml.bind:jaxb-impl:4.0.1'
+    implementation 'com.sun.xml.bind:jaxb-core:4.0.1'
+    // javax.xml.bind
+    implementation 'javax.xml.bind:jaxb-api:2.4.0-b180830.0359'
+
     implementation group: 'com.nimbusds', name: 'nimbus-jose-jwt', version: '3.10'
     implementation group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5'
     implementation group: 'org.bouncycastle', name: 'bcpkix-jdk15on', version: '1.50'
 
-    // redis
-//    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
-//    implementation 'org.springframework.boot:spring-boot-starter-cache'
-
     // rest-docs
     asciidoctorExtensions 'org.springframework.restdocs:spring-restdocs-asciidoctor'
     testImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc'
-    testImplementation 'org.springframework.restdocs:spring-restdocs-restassured:2.0.5.RELEASE'
+    testImplementation 'org.springframework.restdocs:spring-restdocs-restassured'
 
     // actuator
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
@@ -108,8 +111,6 @@ dependencies {
 }
 
 def querydslDir = "build/generated/querydsl"
-//def querydslDir = layout.buildDirectory.dir("build/generated/querydsl").get().asFile
-//tasks.compileQuerydsl.dependsOn(clean);
 sourceSets {
     main.java.srcDirs += [ querydslDir ]
 }
@@ -122,19 +123,12 @@ clean.doLast {
     file(querydslDir).deleteDir()
 }
 
-//querydsl {
-//    jpa = true
-//    querydslSourcesDir = querydslDir
-//}
 sourceSets {
     main.java.srcDir querydslDir
 }
 configurations {
     querydsl.extendsFrom compileClasspath
 }
-//compileQuerydsl {
-//    options.annotationProcessorPath = configurations.querydsl
-//}
 
 jacocoTestReport {
     reports {
@@ -159,8 +153,6 @@ test {
 jacocoTestReport {
     dependsOn test // jacocoTestReport 에 test라는 종속성을 추가
 }
-
-
 
 asciidoctor.doFirst {
     delete file('src/main/resources/static/docs')
