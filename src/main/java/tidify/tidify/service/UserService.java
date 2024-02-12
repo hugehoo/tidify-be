@@ -42,24 +42,24 @@ public class UserService {
 
 
     private void saveOrUpdateUser(Token token) {
-        String userEmail = jwtTokenProvider.getUserPk(token.getAccessToken(), false);
+        String userEmail = jwtTokenProvider.getUserPk(token.accessToken(), false);
         userRepository.findUserByEmailAndDelFalse(userEmail)
             .ifPresentOrElse(existUser -> updateTokens(existUser, token),
                 () -> saveUser(token));
     }
 
     private void saveUser(Token token) {
-        String email = token.getKey();
+        String email = token.key();
         UserDto userDto = UserDto.of(email, passwordEncoder.encode(email), token);
-        User user = socialLoginFactory.getSocialType(token.getType())
+        User user = socialLoginFactory.getSocialType(token.type())
             .apply(userDto);
 
         userRepository.save(user);
     }
 
     private void updateTokens(User user, Token token) {
-        user.setAccessToken(token.getAccessToken());
-        user.setRefreshToken(token.getRefreshToken());
+        user.setAccessToken(token.accessToken());
+        user.setRefreshToken(token.refreshToken());
     }
 
     // 이거 탈취당한 토큰으로 그냥 찌르기만 하면 걍 삭제되는데, 다른 대책을 세워야할듯

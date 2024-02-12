@@ -106,9 +106,9 @@ public class FolderRepositoryImpl implements FolderRepositoryCustom {
 
         return query.select(new QFolderResponse(qFolder, qFolderSubscribe.count()))
             .from(qFolder)
-            .where(whereCondition)
             .leftJoin(qFolderSubscribe)
             .on(qFolder.eq(qFolderSubscribe.folder))
+            .where(whereCondition)
             .groupBy(qFolder)
             .offset(pageable.getOffset())
             .limit(pageable.getPageSize())
@@ -125,7 +125,7 @@ public class FolderRepositoryImpl implements FolderRepositoryCustom {
     }
 
     @Override
-    public boolean suspendSharing(Long folderId) {
+    public boolean stopSharing(Long folderId) {
         // 공유 중지하면, 구독자들은 못보게 해야한다 -> del 처리?
         long execute = query.update(qFolderSubscribe)
             .set(qFolderSubscribe.del, true)

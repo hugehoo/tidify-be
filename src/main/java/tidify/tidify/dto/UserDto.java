@@ -1,18 +1,10 @@
 package tidify.tidify.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
 import tidify.tidify.security.Token;
 
-@Getter
-@AllArgsConstructor
-public class UserDto {
-    private String email;
-    private String password;
-    private String accessToken;
-    private String refreshToken;
+public record UserDto(String email, String password, String accessToken, String refreshToken) {
 
     public static UserDto of(String email, String password, Token token) {
-        return new UserDto(email, password, token.getAccessToken(), token.getRefreshToken());
+        return new UserDto(email, password, token.accessToken(), token.refreshToken());
     }
 }

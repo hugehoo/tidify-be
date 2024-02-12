@@ -6,13 +6,14 @@
 
 # Project Tech Stack
 - Java 17
-- Springboot 2.7.8
+- Springboot 3.0.2
 - Jpa 
-- QueryDSL 1.0.10
+- QueryDSL 5.0.0
 - Docker
 - Mysql 8
-- NCloud
-- Prometheus / Grafana
+- Rest-assured
+- <s>NCloud</s> -> AWS ECS
+- <s>Prometheus / Grafana</s>
 - <s>Redis</s>
 
 <hr>
