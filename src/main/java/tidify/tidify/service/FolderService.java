@@ -1,5 +1,6 @@
 package tidify.tidify.service;
 
+import java.util.Objects;
 import java.util.Optional;
 
 import org.springframework.data.domain.Page;
@@ -105,14 +106,18 @@ public class FolderService {
         return CustomPage.of(folders);
     }
 
+    @Transactional
     public void subscribeFolder(Long folderId, String userEmail) {
         User user = userRepository.findUserByEmailAndDelFalse(userEmail).orElseThrow();
         Folder folder = folderRepository.findById(folderId).orElseThrow();
-
+        if (isOwnFolder(user, folder)) {
+            return;
+        }
         if (folderSubscribeRepository.existsByUserAndFolder(user, folder)) {
             return;
         }
 
+        folder.share();
         folderSubscribeRepository.save(
             FolderSubscribe.builder()
                 .folder(folder)
@@ -136,9 +141,13 @@ public class FolderService {
     }
 
     @Transactional
-    public boolean suspendSharing(User user, Long folderId) {
+    public boolean stopSharing(User user, Long folderId) {
         Folder folder = folderRepository.findById(folderId).orElseThrow();
         folder.unShare();
-        return folderRepository.suspendSharing(folderId);
+        return folderRepository.stopSharing(folderId);
+    }
+
+    private boolean isOwnFolder(User user, Folder folder) {
+        return Objects.equals(folder.getUser().getId(), user.getId());
     }
 }
