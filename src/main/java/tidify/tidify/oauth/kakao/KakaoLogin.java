@@ -33,10 +33,10 @@ public class KakaoLogin implements SocialLogin {
     @Override
     public User userTransaction(UserDto user) {
         return User.ofSocialType(
-            user.getEmail(),
-            user.getPassword(),
-            user.getAccessToken(),
-            user.getRefreshToken(),
+            user.email(),
+            user.password(),
+            user.accessToken(),
+            user.refreshToken(),
             SocialType.KAKAO
         );
     }

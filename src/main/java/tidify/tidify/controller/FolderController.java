@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
-import tidify.tidify.domain.FolderSubscribe;
 import tidify.tidify.domain.User;
 import tidify.tidify.dto.CustomPage;
 import tidify.tidify.dto.FolderRequest;
@@ -24,7 +23,6 @@ import tidify.tidify.dto.FolderResponse;
 import tidify.tidify.dto.ObjectResponseDto;
 import tidify.tidify.dto.PageResponseDto;
 import tidify.tidify.dto.ResponseDto;
-import tidify.tidify.dto.AuthKey;
 import tidify.tidify.security.JwtTokenProvider;
 import tidify.tidify.service.FolderService;
 

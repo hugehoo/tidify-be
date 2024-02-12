@@ -48,12 +48,7 @@ public class JwtTokenProvider {
         String accessToken = createAccessToken(userEmail);
         String refreshToken = createRefreshToken(userEmail);
 
-        return Token.builder()
-            .accessToken(accessToken)
-            .refreshToken(refreshToken)
-            .key(userEmail)
-            .type(type)
-            .build();
+        return new Token(accessToken, refreshToken, userEmail, type);
     }
 
     public String createRefreshToken(String userEmail) {
