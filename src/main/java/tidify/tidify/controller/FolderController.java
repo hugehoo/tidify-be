@@ -54,6 +54,7 @@ public class FolderController {
         return new PageResponseDto<>(folders);
     }
 
+    @Description("(나의) 공유중인 폴더)")
     @GetMapping("/subscribing")
     private ResponseDto getSubscribingFolders(
         @AuthenticationPrincipal User user,
@@ -118,6 +119,7 @@ public class FolderController {
         return new ObjectResponseDto<>(myFolder);
     }
 
+    @Description("폴더 생성")
     @PostMapping
     private ResponseDto createFolders(
         @AuthenticationPrincipal User user, @Valid @RequestBody FolderRequest request) {
@@ -130,11 +132,8 @@ public class FolderController {
     @PostMapping("/subscribed/{id}")
     private ResponseDto subscribeFolder(
         @AuthenticationPrincipal User user,
-        // @Valid @RequestBody AuthKey request,
         @PathVariable("id") Long folderId
     ) {
-
-        // String userEmail = jwtTokenProvider.getUserPk(request.getAuthKey(), false);
         folderService.subscribeFolder(folderId, user.getUserEmail());
         return new ObjectResponseDto<>(null);
     }
@@ -144,10 +143,8 @@ public class FolderController {
     @PostMapping("/un-subscribed/{id}")
     private ResponseDto unSubscribeFolder(
         @AuthenticationPrincipal User user,
-        // @RequestBody AuthKey request,
         @PathVariable("id") Long folderId
     ) {
-        // String userEmail = jwtTokenProvider.getUserPk(request.getAuthKey(), false);
         folderService.unSubscribeFolder(folderId, user.getUserEmail());
         return new ObjectResponseDto<>(null);
     }
@@ -158,7 +155,7 @@ public class FolderController {
         @AuthenticationPrincipal User user,
         @PathVariable(value = "folderId") Long folderId) {
 
-        boolean result = folderService.suspendSharing(user, folderId);
+        boolean result = folderService.stopSharing(user, folderId);
         return new ObjectResponseDto<>(result);
     }
 }

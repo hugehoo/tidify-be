@@ -63,4 +63,9 @@ public class Folder extends BaseEntity {
     public void unShare() {
         this.isShared = false;
     }
+
+    public void share() {
+        this.isShared = true;
+    }
+
 }

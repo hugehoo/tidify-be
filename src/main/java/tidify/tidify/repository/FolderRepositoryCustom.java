@@ -18,5 +18,5 @@ public interface FolderRepositoryCustom {
 
     void subscribeFolder(User user, Long folderId);
 
-    boolean suspendSharing(Long folderId);
+    boolean stopSharing(Long folderId);
 }
