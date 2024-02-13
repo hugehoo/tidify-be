@@ -13,9 +13,9 @@ import tidify.tidify.domain.User;
 @Repository
 public interface FolderSubscribeRepository extends JpaRepository<FolderSubscribe, Long> {
 
-    boolean existsByUserAndFolder(User user, Folder folder);
+    boolean existsByUserAndFolderAndDel(User user, Folder folder, Boolean isDel);
 
-    Optional<FolderSubscribe> findByUserAndFolder(User user, Folder folder);
+    Optional<FolderSubscribe> findByUserAndFolderAndDel(User user, Folder folder, Boolean isDel);
 
     List<FolderSubscribe> findByFolder(Folder folder);
 }

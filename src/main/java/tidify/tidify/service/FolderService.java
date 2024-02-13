@@ -113,7 +113,7 @@ public class FolderService {
         if (isOwnFolder(user, folder)) {
             return;
         }
-        if (folderSubscribeRepository.existsByUserAndFolder(user, folder)) {
+        if (folderSubscribeRepository.existsByUserAndFolderAndDel(user, folder, false)) {
             return;
         }
 
@@ -133,7 +133,7 @@ public class FolderService {
         Folder folder = folderRepository.findById(folderId)
             .orElseThrow();
 
-        FolderSubscribe folderSubscribe = folderSubscribeRepository.findByUserAndFolder(user, folder)
+        FolderSubscribe folderSubscribe = folderSubscribeRepository.findByUserAndFolderAndDel(user, folder, false)
             .orElseThrow();
 
         folderSubscribe.unsubscribe();
@@ -149,5 +149,10 @@ public class FolderService {
 
     private boolean isOwnFolder(User user, Folder folder) {
         return Objects.equals(folder.getUser().getId(), user.getId());
+    }
+
+    public CustomPage getSharedFolderWithBookmarks(User user, Long folderId, Pageable pageable) {
+        Page<BookmarkResponse> bookmarks = folderRepository.findBookmarksBySharedFolder(user, folderId, pageable);
+        return CustomPage.of(bookmarks);
     }
 }

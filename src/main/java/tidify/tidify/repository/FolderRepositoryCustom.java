@@ -12,6 +12,8 @@ public interface FolderRepositoryCustom {
 
     Page<BookmarkResponse> findBookmarksByFolder(User user, Long folderId, Pageable pageable);
 
+    Page<BookmarkResponse> findBookmarksBySharedFolder(User user, Long folderId, Pageable pageable);
+
     Page<FolderResponse> findSubscribedFolders(User user, Pageable pageable);
 
     Page<FolderResponse> findSubscribingFolders(User user, Pageable pageable);

@@ -1,6 +1,7 @@
 package tidify.tidify.repository.qdsl;
 
 import java.util.List;
+import java.util.Objects;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -12,6 +13,7 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 
 import lombok.RequiredArgsConstructor;
 import tidify.tidify.domain.Folder;
+import tidify.tidify.domain.FolderSubscribe;
 import tidify.tidify.domain.QBookmark;
 import tidify.tidify.domain.QFolder;
 import tidify.tidify.domain.QFolderSubscribe;
@@ -43,6 +45,35 @@ public class FolderRepositoryImpl implements FolderRepositoryCustom {
 
         BooleanExpression whereClause = qBookmark.user.eq(user)
             .and(qBookmark.folder.id.eq(folderId))
+            .and(qBookmark.del.isFalse());
+
+        List<BookmarkResponse> fetch = query.select(new QBookmarkResponse(qBookmark, qFolder.id))
+            .from(qBookmark)
+            .where(whereClause)
+            .offset(pageable.getOffset())
+            .limit(pageable.getPageSize())
+            .fetch();
+
+        JPAQuery<Long> count = query.select(qBookmark.count())
+            .from(qBookmark)
+            .where(whereClause);
+
+        return PageableExecutionUtils.getPage(fetch, pageable, count::fetchOne);
+    }
+
+    @Override
+    public Page<BookmarkResponse> findBookmarksBySharedFolder(User user, Long folderId, Pageable pageable) {
+
+        FolderSubscribe folderSubscribe = query.selectFrom(qFolderSubscribe)
+            .where(qFolderSubscribe.user.eq(user))
+            .where(qFolderSubscribe.folder.id.eq(folderId))
+            .where(qFolderSubscribe.del.isFalse())
+            .fetchOne();
+        if (Objects.isNull(folderSubscribe)) {
+            return Page.empty();
+        }
+
+        BooleanExpression whereClause = qBookmark.folder.id.eq(folderId)
             .and(qBookmark.del.isFalse());
 
         List<BookmarkResponse> fetch = query.select(new QBookmarkResponse(qBookmark, qFolder.id))

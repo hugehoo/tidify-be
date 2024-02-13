@@ -93,6 +93,18 @@ public class FolderController {
         return new PageResponseDto<>(folderWithBookmarks);
     }
 
+    @Description("구독한 폴더의 북마크 조회")
+    @GetMapping("/{folderId}/bookmarks/shared")
+    private ResponseDto getSharedFolderWithBookmarks(
+        @AuthenticationPrincipal User user,
+        @PathVariable("folderId") Long folderId,
+        Pageable pageable
+    ) {
+        CustomPage folderWithBookmarks = folderService.getSharedFolderWithBookmarks(user, folderId,
+            pageable);
+        return new PageResponseDto<>(folderWithBookmarks);
+    }
+
     @PatchMapping("/{folderId}")
     private ResponseDto modifyFolders(
         @AuthenticationPrincipal User user,
