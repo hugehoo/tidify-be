@@ -3,6 +3,7 @@
 
 ### 🔗 [iOS Repo](https://github.com/Nexters/tidify-iOS)
 
+### 서버 종료 (2023.05 ~ 2024.03)
 
 # Project Tech Stack
 - Java 17
